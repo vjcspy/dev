@@ -19,7 +19,7 @@ pnpm -r build
 Install CLI globally:
 
 ```bash
-cd common/cli-core
+cd common/cli
 pnpm link --global
 ```
 
@@ -46,12 +46,14 @@ pm2 logs
 
 | Package | Path | Description |
 |---------|------|-------------|
-| `@aweave/cli` | `common/cli-core/` | Root CLI entrypoint + shared utilities |
+| `@aweave/cli` | `common/cli/` | Root CLI entrypoint (oclif) |
 | `@aweave/cli-shared` | `common/cli-shared/` | Shared CLI libraries (MCP, HTTP, pm2) |
-| `@aweave/cli-debate` | `common/cli-plugin-debate/` | `aw debate` commands |
-| `@aweave/cli-docs` | `common/cli-plugin-docs/` | `aw docs` commands |
-| `@aweave/server` | `common/server/` | Unified NestJS server |
+| `@aweave/cli-plugin-debate` | `common/cli-plugin-debate/` | `aw debate` commands |
+| `@aweave/cli-plugin-docs` | `common/cli-plugin-docs/` | `aw docs` commands |
+| `@aweave/cli-plugin-dashboard` | `common/cli-plugin-dashboard/` | `aw dashboard` commands |
+| `server` | `common/server/` | Unified NestJS server |
 | `@aweave/nestjs-debate` | `common/nestjs-debate/` | Debate backend module (Prisma + SQLite) |
+| `@aweave/debate-machine` | `common/debate-machine/` | Debate state machine |
 | `debate-web` | `common/debate-web/` | Next.js debate web UI |
 
 ## Development
@@ -67,7 +69,7 @@ cd common/server && pnpm build
 cd common/server && node dist/main.js
 
 # Run CLI (dev, without global install)
-cd common/cli-core && node dist/bin/aw.js --help
+cd common/cli && ./bin/dev.js --help
 ```
 
 ## Documentation
