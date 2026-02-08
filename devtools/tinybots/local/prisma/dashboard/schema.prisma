@@ -1,0 +1,934 @@
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../../src/generated/prisma/dashboard"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DASHBOARD_DATABASE_URL")
+}
+
+model android_device {
+  id                             Int                             @id @default(autoincrement()) @db.UnsignedInt
+  serial                         String                          @db.VarChar(255)
+  device_name                    String?                         @db.VarChar(255)
+  hardware_version               String                          @db.VarChar(64)
+  wlan_mac_address               String?                         @db.VarChar(20)
+  embodiment_version             String?                         @db.VarChar(64)
+  dashboard_robot_id             BigInt?                         @db.UnsignedBigInt
+  enrollment_id                  Int?                            @db.UnsignedInt
+  created_at                     DateTime?                       @default(now()) @db.DateTime(0)
+  updated_at                     DateTime?                       @default(now()) @db.DateTime(0)
+  dashboard_robot                dashboard_robot?                @relation(fields: [dashboard_robot_id], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "fk_dashboard_robot_id")
+  device_enrollment_registration device_enrollment_registration? @relation(fields: [enrollment_id], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "fk_enrollment_id")
+
+  @@unique([serial, hardware_version], map: "idx_android_device_serial_hardware_version")
+  @@index([dashboard_robot_id], map: "fk_dashboard_robot_id")
+  @@index([enrollment_id], map: "fk_enrollment_id")
+}
+
+model android_device_polling_scheduler {
+  enterprise_id String    @id @db.VarChar(255)
+  polling_mode  Int?      @default(0) @db.TinyInt
+  created_at    DateTime? @default(now()) @db.DateTime(0)
+  updated_at    DateTime? @default(now()) @db.DateTime(0)
+}
+
+model continuation_token {
+  token                  String                 @id @db.VarChar(16)
+  dashboard_user_id      Int                    @db.UnsignedInt
+  skip_subscription      Int                    @default(0) @db.UnsignedInt
+  skip_taas              Int                    @default(0) @db.UnsignedInt
+  skip_robot             Int                    @default(0) @db.UnsignedInt
+  search_term            String?                @db.VarChar(256)
+  search_type            String?                @db.VarChar(32)
+  sort_by                String                 @db.VarChar(32)
+  sort_order             String                 @db.VarChar(8)
+  status                 String?                @db.VarChar(16)
+  valid_until            DateTime               @db.DateTime(0)
+  created_at             DateTime               @default(now()) @db.DateTime(0)
+  dashboard_user_account dashboard_user_account @relation(fields: [dashboard_user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "continuation_token_ibfk_1")
+
+  @@index([dashboard_user_id], map: "fk_continuation_token_dashboard_user_id")
+}
+
+model dashboard_account_activation {
+  id                     Int                    @id @default(autoincrement()) @db.UnsignedInt
+  dashboard_user_id      Int                    @db.UnsignedInt
+  activation_key         String                 @unique(map: "idx_activation_key") @db.VarChar(32)
+  created_at             DateTime               @default(now()) @db.DateTime(0)
+  valid_until            DateTime               @db.DateTime(0)
+  activated_at           DateTime?              @db.DateTime(0)
+  dashboard_user_account dashboard_user_account @relation(fields: [dashboard_user_id], references: [id], onUpdate: Restrict, map: "dashboard_account_activation_ibfk_1")
+
+  @@index([dashboard_user_id], map: "fk_user_dashboard_account_activation")
+}
+
+model dashboard_config {
+  key        String    @id @db.VarChar(32)
+  value      String    @db.Text
+  updated_at DateTime? @default(now()) @db.DateTime(0)
+}
+
+model dashboard_external_account {
+  issuer                    String                 @db.VarChar(255)
+  unique_id                 String                 @db.VarChar(255)
+  dashboard_user_account_id Int                    @db.UnsignedInt
+  created_at                DateTime?              @default(now()) @db.DateTime(0)
+  dashboard_user_account    dashboard_user_account @relation(fields: [dashboard_user_account_id], references: [id], onUpdate: Restrict, map: "fk_external_account_dashboard_user_account_id")
+
+  @@id([issuer, unique_id])
+  @@index([dashboard_user_account_id], map: "fk_external_account_dashboard_user_account_id")
+}
+
+model dashboard_payment_reference {
+  id                           Int                            @id @default(autoincrement()) @db.UnsignedInt
+  reference                    String                         @unique(map: "idx_payment_reference") @db.VarChar(64)
+  created_at                   DateTime                       @default(now()) @db.DateTime(0)
+  dashboard_robot              dashboard_robot[]
+  dashboard_robot_subscription dashboard_robot_subscription[]
+}
+
+model dashboard_premium_package {
+  id         Int      @id @default(autoincrement()) @db.UnsignedInt
+  name       String   @db.VarChar(64)
+  created_at DateTime @default(now()) @db.DateTime(0)
+}
+
+model dashboard_relation {
+  id                                                                              Int                                   @id @default(autoincrement()) @db.UnsignedInt
+  created_at                                                                      DateTime                              @default(now()) @db.DateTime(0)
+  relation_number                                                                 Int?                                  @db.UnsignedInt
+  teamleader_id                                                                   String?                               @unique(map: "dashboard_relation_teamleader_id_UNIQUE") @db.VarChar(36)
+  name                                                                            String?                               @db.VarChar(128)
+  notes                                                                           String?                               @db.Text
+  updated_at                                                                      DateTime                              @default(now()) @db.DateTime(0)
+  teamleader_type                                                                 dashboard_relation_teamleader_type    @default(company)
+  first_name                                                                      String?                               @db.VarChar(64)
+  last_name                                                                       String?                               @db.VarChar(64)
+  deleted_at                                                                      DateTime?                             @db.DateTime(0)
+  type_id                                                                         Int?                                  @db.UnsignedSmallInt
+  dashboard_relation_type                                                         dashboard_relation_type?              @relation(fields: [type_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "dashboard_relation_ibfk_1")
+  dashboard_relation_email                                                        dashboard_relation_email[]
+  dashboard_relation_link_dashboard_relation_link_relation_idTodashboard_relation dashboard_relation_link[]             @relation("dashboard_relation_link_relation_idTodashboard_relation")
+  dashboard_relation_link_dashboard_relation_link_parent_idTodashboard_relation   dashboard_relation_link[]             @relation("dashboard_relation_link_parent_idTodashboard_relation")
+  dashboard_relation_profile                                                      dashboard_relation_profile?
+  dashboard_robot                                                                 dashboard_robot[]
+  dashboard_robot_subscription_chain                                              dashboard_robot_subscription_chain[]
+  dashboard_user_account                                                          dashboard_user_account[]
+  dashboard_user_account_registration                                             dashboard_user_account_registration[]
+  integration_relation                                                            integration_relation[]
+  ons_integration_config                                                          ons_integration_config[]
+  taas_concept_contact                                                            taas_concept_contact[]
+  taas_concept_order                                                              taas_concept_order[]
+  taas_concept_return                                                             taas_concept_return[]
+  taas_order                                                                      taas_order[]
+  taas_order_default_requester                                                    taas_order_default_requester?
+  taas_subscription                                                               taas_subscription[]
+
+  @@index([type_id], map: "fk_dashboard_relation_type_id")
+}
+
+model dashboard_relation_email {
+  id                 Int                @id @default(autoincrement()) @db.UnsignedInt
+  relation_id        Int                @db.UnsignedInt
+  email              String             @db.VarChar(254)
+  type               String             @db.VarChar(32)
+  updated_at         DateTime           @default(now()) @db.DateTime(0)
+  created_at         DateTime           @default(now()) @db.DateTime(0)
+  dashboard_relation dashboard_relation @relation(fields: [relation_id], references: [id], onUpdate: Restrict, map: "dashboard_relation_email_ibfk_1")
+
+  @@unique([relation_id, type], map: "relation_email_type_UNIQUE")
+}
+
+model dashboard_relation_link {
+  id                                                                         Int                @id @default(autoincrement()) @db.UnsignedInt
+  relation_id                                                                Int                @db.UnsignedInt
+  parent_id                                                                  Int                @db.UnsignedInt
+  position                                                                   String?            @db.VarChar(32)
+  updated_at                                                                 DateTime           @default(now()) @db.DateTime(0)
+  created_at                                                                 DateTime           @default(now()) @db.DateTime(0)
+  dashboard_relation_dashboard_relation_link_relation_idTodashboard_relation dashboard_relation @relation("dashboard_relation_link_relation_idTodashboard_relation", fields: [relation_id], references: [id], onUpdate: Restrict, map: "dashboard_relation_link_ibfk_1")
+  dashboard_relation_dashboard_relation_link_parent_idTodashboard_relation   dashboard_relation @relation("dashboard_relation_link_parent_idTodashboard_relation", fields: [parent_id], references: [id], onUpdate: Restrict, map: "dashboard_relation_link_ibfk_2")
+
+  @@unique([relation_id, parent_id], map: "relation_parent_UNIQUE")
+  @@index([parent_id], map: "fk_dashboard_relation_link_parent_id")
+}
+
+model dashboard_relation_profile {
+  relation_id        Int                @id @db.UnsignedInt
+  premium_package_id Int?               @db.UnsignedInt
+  service_package_id Int                @default(1) @db.UnsignedInt
+  notes              String?            @db.Text
+  updated_at         DateTime           @default(now()) @db.DateTime(0)
+  created_at         DateTime           @default(now()) @db.DateTime(0)
+  dashboard_relation dashboard_relation @relation(fields: [relation_id], references: [id], onUpdate: Restrict, map: "dashboard_relation_profile_ibfk_1")
+}
+
+model dashboard_relation_type {
+  id                 Int                  @id @default(autoincrement()) @db.UnsignedSmallInt
+  type               String               @unique(map: "idx_relation_type") @db.VarChar(64)
+  created_at         DateTime             @default(now()) @db.DateTime(0)
+  dashboard_relation dashboard_relation[]
+}
+
+model dashboard_robot {
+  id                                 BigInt                               @id @default(autoincrement()) @db.UnsignedBigInt
+  serial                             String                               @unique(map: "serial_UNIQUE") @db.VarChar(16)
+  box_number                         BigInt?                              @unique(map: "box_number_UNIQUE") @db.UnsignedBigInt
+  hardware_version                   String?                              @db.VarChar(16)
+  eth_mac                            String?                              @db.VarChar(20)
+  wlan_mac                           String?                              @db.VarChar(20)
+  assembled_at                       DateTime?                            @db.DateTime(0)
+  taas                               Boolean                              @default(false)
+  updated_at                         DateTime                             @default(now()) @db.DateTime(0)
+  created_at                         DateTime                             @default(now()) @db.DateTime(0)
+  relation_id                        Int?                                 @db.UnsignedInt
+  payment_reference_id               Int?                                 @db.UnsignedInt
+  zendesk_ticket_id                  Int?                                 @db.UnsignedInt
+  notes                              String?                              @db.Text
+  exclude_okr                        Boolean                              @default(false)
+  deactivated_at                     DateTime                             @default(dbgenerated("'9999-12-31 23:59:59'")) @db.DateTime(0)
+  shippable_at                       DateTime                             @default(now()) @db.DateTime(0)
+  icc_id                             String?                              @unique(map: "dashboard_robot_icc_id_unique") @db.VarChar(20)
+  hardware_type_id                   Int                                  @default(1) @db.UnsignedTinyInt
+  android_device                     android_device[]
+  dashboard_relation                 dashboard_relation?                  @relation(fields: [relation_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "dashboard_robot_ibfk_1")
+  dashboard_payment_reference        dashboard_payment_reference?         @relation(fields: [payment_reference_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "dashboard_robot_ibfk_2")
+  icc                                icc?                                 @relation(fields: [icc_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "dashboard_robot_ibfk_3")
+  hardware_type                      hardware_type                        @relation(fields: [hardware_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_dashboard_robot_hardware_type_id")
+  dashboard_robot_subscription_chain dashboard_robot_subscription_chain[]
+  taas_subscription                  taas_subscription?
+
+  @@index([hardware_type_id], map: "fk_dashboard_robot_hardware_type_id")
+  @@index([payment_reference_id], map: "fk_dashboard_robot_payment_reference_id")
+  @@index([relation_id], map: "fk_dashboard_robot_relation_id")
+}
+
+model dashboard_robot_info {
+  id                           Int                          @id @default(autoincrement()) @db.UnsignedInt
+  subscription_id              Int                          @unique(map: "subscription_id") @db.UnsignedInt
+  first_name                   String?                      @db.VarChar(128)
+  last_name                    String?                      @db.VarChar(256)
+  phone_number                 String?                      @db.VarChar(32)
+  email                        String?                      @db.VarChar(254)
+  address                      String?                      @db.VarChar(256)
+  department                   String?                      @db.VarChar(256)
+  notes                        String?                      @db.VarChar(256)
+  updated_at                   DateTime                     @default(now()) @db.DateTime(0)
+  created_at                   DateTime                     @default(now()) @db.DateTime(0)
+  dashboard_robot_subscription dashboard_robot_subscription @relation(fields: [subscription_id], references: [id], onUpdate: Restrict, map: "dashboard_robot_info_ibfk_2")
+}
+
+model dashboard_robot_subscription {
+  id                                 Int                                 @id @default(autoincrement()) @db.UnsignedInt
+  start_at                           DateTime?                           @db.Date
+  end_at                             DateTime?                           @db.Date
+  subscription_length                Int                                 @db.UnsignedInt
+  notes                              String?                             @db.Text
+  payment_reference_id               Int?                                @db.UnsignedInt
+  shipped_at                         DateTime?                           @db.Date
+  created_at                         DateTime                            @default(now()) @db.DateTime(0)
+  updated_at                         DateTime                            @default(now()) @db.DateTime(0)
+  parent_id                          Int?                                @db.UnsignedInt
+  chain_id                           Int?                                @db.UnsignedInt
+  dashboard_robot_info               dashboard_robot_info?
+  dashboard_payment_reference        dashboard_payment_reference?        @relation(fields: [payment_reference_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "dashboard_robot_subscription_ibfk_1")
+  dashboard_robot_subscription_chain dashboard_robot_subscription_chain? @relation(fields: [chain_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "dashboard_robot_subscription_ibfk_2")
+  dashboard_robot_subscription       dashboard_robot_subscription?       @relation("dashboard_robot_subscriptionTodashboard_robot_subscription", fields: [parent_id], references: [id], onUpdate: SetNull, map: "robot_subscription_parent_id_ibfk_3")
+  other_dashboard_robot_subscription dashboard_robot_subscription[]      @relation("dashboard_robot_subscriptionTodashboard_robot_subscription")
+
+  @@index([payment_reference_id], map: "fk_dashboard_robot_subscription_payment_reference_id")
+  @@index([chain_id], map: "fk_dashboard_robot_subscrption_chain_id")
+  @@index([parent_id], map: "robot_subscription_parent_id_ibfk_3")
+}
+
+model dashboard_robot_subscription_chain {
+  id                            Int                            @id @default(autoincrement()) @db.UnsignedInt
+  relation_id                   Int?                           @db.UnsignedInt
+  robot_id                      BigInt?                        @db.UnsignedBigInt
+  hardware_type_id              Int                            @default(1) @db.UnsignedTinyInt
+  created_at                    DateTime                       @default(now()) @db.DateTime(0)
+  updated_at                    DateTime                       @default(now()) @db.DateTime(0)
+  canceled_at                   DateTime?                      @db.DateTime(0)
+  dashboard_robot_subscription  dashboard_robot_subscription[]
+  dashboard_relation            dashboard_relation?            @relation(fields: [relation_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "dashboard_robot_subscription_chain_ibfk_1")
+  dashboard_robot               dashboard_robot?               @relation(fields: [robot_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "dashboard_robot_subscription_chain_ibfk_2")
+  hardware_type                 hardware_type                  @relation(fields: [hardware_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_dashboard_robot_subscription_chain_hardware_type_id")
+  dashboard_tessa_owner_contact dashboard_tessa_owner_contact?
+
+  @@index([relation_id], map: "fk_dashboard_chain_relation_id")
+  @@index([robot_id], map: "fk_dashboard_chain_robot_id")
+  @@index([hardware_type_id], map: "fk_dashboard_robot_subscription_chain_hardware_type_id")
+}
+
+model dashboard_service_package {
+  id         Int      @id @default(autoincrement()) @db.UnsignedInt
+  name       String   @db.VarChar(64)
+  created_at DateTime @default(now()) @db.DateTime(0)
+}
+
+model dashboard_tessa_owner_contact {
+  id                                 Int                                @id @default(autoincrement()) @db.UnsignedInt
+  chain_id                           Int                                @unique(map: "chain_id") @db.UnsignedInt
+  first_name                         String?                            @db.VarChar(128)
+  last_name                          String?                            @db.VarChar(256)
+  phone_number                       String?                            @db.VarChar(32)
+  email                              String?                            @db.VarChar(254)
+  address                            String?                            @db.VarChar(256)
+  department                         String?                            @db.VarChar(256)
+  notes                              String?                            @db.VarChar(1024)
+  updated_at                         DateTime                           @default(now()) @db.DateTime(0)
+  created_at                         DateTime                           @default(now()) @db.DateTime(0)
+  dashboard_robot_subscription_chain dashboard_robot_subscription_chain @relation(fields: [chain_id], references: [id], onUpdate: Restrict, map: "dashboard_tessa_owner_contact_ibfk_1")
+}
+
+model dashboard_user_account {
+  id                            Int                            @id @default(autoincrement()) @db.UnsignedInt
+  email                         String                         @unique(map: "idx_username") @db.VarChar(254)
+  password                      String?                        @db.VarChar(128)
+  account_status_id             Int?                           @default(2) @db.UnsignedTinyInt
+  created_at                    DateTime?                      @default(now()) @db.DateTime(0)
+  updated_at                    DateTime?                      @default(now()) @db.DateTime(0)
+  role_id                       Int                            @default(1) @db.UnsignedTinyInt
+  added_to_teamleader           Boolean                        @default(false)
+  relation_id                   Int                            @db.UnsignedInt
+  last_active_at                DateTime?                      @db.DateTime(0)
+  totp_secret                   String?                        @db.VarChar(32)
+  mfa_enabled_at                DateTime?                      @db.DateTime(0)
+  continuation_token            continuation_token[]
+  dashboard_account_activation  dashboard_account_activation[]
+  dashboard_external_account    dashboard_external_account[]
+  dashboard_user_roles          dashboard_user_roles           @relation(fields: [role_id], references: [id], onUpdate: Restrict, map: "dashboard_user_account_ibfk_2")
+  dashboard_user_account_status dashboard_user_account_status? @relation(fields: [account_status_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "dashboard_user_account_ibfk_3")
+  dashboard_relation            dashboard_relation             @relation(fields: [relation_id], references: [id], onUpdate: Restrict, map: "dashboard_user_account_ibfk_5")
+  dashboard_user_password_reset dashboard_user_password_reset?
+  dashboard_user_profile        dashboard_user_profile?
+  group_users                   group_users[]
+
+  @@index([account_status_id], map: "fk_dashboard_user_account_account_status_id")
+  @@index([relation_id], map: "fk_dashboard_user_account_relation_id")
+  @@index([role_id], map: "fk_dashboard_user_account_role_id")
+}
+
+model dashboard_user_account_registration {
+  id                 Int                @id @default(autoincrement()) @db.UnsignedInt
+  registration_key   String             @unique(map: "idx_registration_key") @db.VarChar(32)
+  registration_email String             @db.VarChar(254)
+  created_at         DateTime           @default(now()) @db.DateTime(0)
+  valid_until        DateTime           @db.DateTime(0)
+  relation_id        Int                @db.UnsignedInt
+  dashboard_relation dashboard_relation @relation(fields: [relation_id], references: [id], onUpdate: Restrict, map: "dashboard_user_account_registration_ibfk_3")
+
+  @@index([relation_id], map: "fk_dashboard_user_account_registration_relation_id")
+}
+
+model dashboard_user_account_status {
+  id                     Int                      @id @db.UnsignedTinyInt
+  status                 String                   @unique(map: "idx_account_status") @db.VarChar(64)
+  created_at             DateTime?                @default(now()) @db.DateTime(0)
+  dashboard_user_account dashboard_user_account[]
+}
+
+model dashboard_user_password_reset {
+  dashboard_user_id      Int                    @id @db.UnsignedInt
+  reset_key              String                 @unique(map: "reset_key") @db.Char(32)
+  created_at             DateTime               @default(now()) @db.DateTime(0)
+  dashboard_user_account dashboard_user_account @relation(fields: [dashboard_user_id], references: [id], onUpdate: Restrict, map: "dashboard_user_password_reset_ibfk_1")
+}
+
+model dashboard_user_profile {
+  dashboard_user_id      Int                    @id @db.UnsignedInt
+  first_name             String                 @db.VarChar(128)
+  last_name              String                 @db.VarChar(256)
+  phone_number           BigInt?
+  created_at             DateTime               @default(now()) @db.DateTime(0)
+  updated_at             DateTime               @default(now()) @db.DateTime(0)
+  dashboard_user_account dashboard_user_account @relation(fields: [dashboard_user_id], references: [id], onUpdate: Restrict, map: "dashboard_user_profile_ibfk_1")
+}
+
+model dashboard_user_roles {
+  id                     Int                      @id @db.UnsignedTinyInt
+  role                   String                   @unique(map: "idx_account_status") @db.VarChar(64)
+  created_at             DateTime?                @default(now()) @db.DateTime(0)
+  dashboard_user_account dashboard_user_account[]
+}
+
+model device_enrollment_registration {
+  id              Int              @id @default(autoincrement()) @db.UnsignedInt
+  user_id         Int              @db.UnsignedInt
+  user_name       String           @db.VarChar(255)
+  enrollment_name String           @unique(map: "unique_enrollment_name") @db.VarChar(255)
+  expired_at      DateTime?        @db.DateTime(0)
+  qr_content      Bytes?           @db.Blob
+  is_expired      Boolean          @default(false)
+  created_at      DateTime?        @default(now()) @db.DateTime(0)
+  updated_at      DateTime?        @default(now()) @db.DateTime(0)
+  android_device  android_device[]
+
+  @@index([user_id], map: "idx_user_id")
+  @@index([user_id, is_expired], map: "idx_user_id_is_expired")
+}
+
+model ecd_oauth {
+  id             Int         @id @default(autoincrement()) @db.UnsignedInt
+  integration_id Int         @db.UnsignedInt
+  client_id      String?     @db.VarChar(256)
+  client_secret  String?     @db.VarChar(2048)
+  created_at     DateTime    @default(now()) @db.DateTime(0)
+  updated_at     DateTime    @default(now()) @db.DateTime(0)
+  integration    integration @relation(fields: [integration_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "ecd_oauth_ibfk_1")
+
+  @@index([integration_id], map: "fk_ecd_auth_token_integration_id")
+}
+
+model ecd_order {
+  id             Int         @id @default(autoincrement()) @db.UnsignedInt
+  integration_id Int         @db.UnsignedInt
+  ecd_client_id  String      @db.VarChar(512)
+  taas_order_id  Int         @db.UnsignedInt
+  created_at     DateTime    @default(now()) @db.DateTime(0)
+  updated_at     DateTime    @default(now()) @db.DateTime(0)
+  integration    integration @relation(fields: [integration_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "ecd_order_ibfk_1")
+  taas_order     taas_order  @relation(fields: [taas_order_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "ecd_order_ibfk_2")
+
+  @@index([integration_id], map: "fk_ecd_order_integration_id")
+  @@index([taas_order_id], map: "fk_ecd_order_order_id")
+}
+
+model group_permissions {
+  group_id      Int         @db.UnsignedInt
+  permission_id Int         @db.UnsignedInt
+  created_at    DateTime?   @default(now()) @db.DateTime(0)
+  groups        groups      @relation(fields: [group_id], references: [id], onUpdate: NoAction, map: "group_permissions_ibfk_1")
+  permissions   permissions @relation(fields: [permission_id], references: [id], onUpdate: NoAction, map: "group_permissions_ibfk_2")
+
+  @@id([group_id, permission_id])
+  @@index([permission_id], map: "permission_id")
+}
+
+model group_users {
+  group_id               Int                    @db.UnsignedInt
+  user_id                Int                    @db.UnsignedInt
+  created_at             DateTime?              @default(now()) @db.DateTime(0)
+  groups                 groups                 @relation(fields: [group_id], references: [id], onUpdate: NoAction, map: "group_users_ibfk_1")
+  dashboard_user_account dashboard_user_account @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "group_users_ibfk_2")
+
+  @@id([group_id, user_id])
+  @@index([user_id], map: "user_id")
+}
+
+model groups {
+  id                Int                 @id @default(autoincrement()) @db.UnsignedInt
+  name              String              @unique(map: "idx_group_name") @db.VarChar(256)
+  description       String              @default("") @db.VarChar(256)
+  created_at        DateTime?           @default(now()) @db.DateTime(0)
+  updated_at        DateTime?           @default(now()) @db.DateTime(0)
+  group_permissions group_permissions[]
+  group_users       group_users[]
+}
+
+model hardware_type {
+  id                                 Int                                  @id @default(autoincrement()) @db.UnsignedTinyInt
+  name                               String                               @unique(map: "idx_hardware_type_name") @db.VarChar(64)
+  created_at                         DateTime?                            @default(now()) @db.DateTime(0)
+  dashboard_robot                    dashboard_robot[]
+  dashboard_robot_subscription_chain dashboard_robot_subscription_chain[]
+  taas_concept_order                 taas_concept_order[]
+  taas_order                         taas_order[]
+  taas_subscription                  taas_subscription[]
+}
+
+model icc {
+  id              String           @id @db.VarChar(20)
+  created_at      DateTime         @default(now()) @db.DateTime(0)
+  dashboard_robot dashboard_robot?
+}
+
+model integration {
+  id                          Int                           @id @default(autoincrement()) @db.UnsignedInt
+  name                        String                        @unique(map: "idx_integration_name") @db.VarChar(128)
+  email                       String                        @unique(map: "idx_integration_email") @db.VarChar(256)
+  password                    String                        @db.VarChar(128)
+  account_status_id           Int?                          @default(3) @db.UnsignedTinyInt
+  created_at                  DateTime?                     @default(now()) @db.DateTime(0)
+  updated_at                  DateTime?                     @default(now()) @db.DateTime(0)
+  ecd_oauth                   ecd_oauth[]
+  ecd_order                   ecd_order[]
+  integration_account_status  integration_account_status?   @relation(fields: [account_status_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "integration_ibfk_1")
+  integration_relation        integration_relation[]
+  nedap_survey_concept_order  nedap_survey_concept_order[]
+  nedap_survey_concept_return nedap_survey_concept_return[]
+  ons_integration_config      ons_integration_config[]
+  taas_concept_order          taas_concept_order[]
+  taas_concept_return         taas_concept_return[]
+  taas_order                  taas_order[]
+
+  @@index([account_status_id], map: "fk_registration_account_status_id")
+}
+
+model integration_account_status {
+  id          Int           @id @db.UnsignedTinyInt
+  status      String        @unique(map: "idx_account_status") @db.VarChar(32)
+  created_at  DateTime?     @default(now()) @db.DateTime(0)
+  integration integration[]
+}
+
+model integration_certificate {
+  id                     Int                      @id @default(autoincrement()) @db.UnsignedInt
+  name                   String                   @unique(map: "idx_integration_certificate_name") @db.VarChar(256)
+  certificate            String                   @db.VarChar(4096)
+  key                    String                   @db.VarChar(4096)
+  host                   String                   @db.VarChar(1024)
+  created_at             DateTime                 @default(now()) @db.DateTime(0)
+  updated_at             DateTime                 @default(now()) @db.DateTime(0)
+  ons_integration_config ons_integration_config[]
+}
+
+model integration_oauth {
+  id            Int      @id @default(autoincrement()) @db.UnsignedInt
+  name          String   @unique(map: "idx_integration_oauth") @db.VarChar(256)
+  url           String?  @db.VarChar(1024)
+  client_id     String   @db.VarChar(4096)
+  client_secret String   @db.VarChar(4096)
+  valid_until   DateTime @default(dbgenerated("'2099-12-31 23:59:59'")) @db.DateTime(0)
+}
+
+model integration_registration {
+  id                                Int                                 @id @default(autoincrement()) @db.UnsignedInt
+  registration_key                  String                              @unique(map: "idx_registration_key") @db.VarChar(32)
+  name                              String                              @db.VarChar(256)
+  valid_until                       DateTime                            @db.DateTime(0)
+  created_at                        DateTime                            @default(now()) @db.DateTime(0)
+  integration_registration_relation integration_registration_relation[]
+}
+
+model integration_registration_relation {
+  id                       Int                      @id @default(autoincrement()) @db.UnsignedInt
+  registration_key_id      Int                      @db.UnsignedInt
+  relation_id              Int                      @db.UnsignedInt
+  name                     String                   @db.VarChar(128)
+  integration_registration integration_registration @relation(fields: [registration_key_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "integration_registration_relation_ibfk_1")
+
+  @@index([registration_key_id], map: "fk_registration_key_id")
+}
+
+model integration_relation {
+  id                 Int                @id @default(autoincrement()) @db.UnsignedInt
+  integration_id     Int                @db.UnsignedInt
+  relation_id        Int                @db.UnsignedInt
+  name               String?            @db.VarChar(128)
+  created_at         DateTime           @default(now()) @db.DateTime(0)
+  integration        integration        @relation(fields: [integration_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "integration_relation_ibfk_1")
+  dashboard_relation dashboard_relation @relation(fields: [relation_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "integration_relation_ibfk_2")
+
+  @@index([integration_id], map: "fk_certificate_relation_integration_id")
+  @@index([relation_id], map: "fk_certificate_relation_relation_id")
+}
+
+model nedap_survey_concept_order {
+  id                     Int                 @id @default(autoincrement()) @db.UnsignedInt
+  integration_id         Int                 @db.UnsignedInt
+  taas_concept_order_id  Int?                @db.UnsignedInt
+  nedap_survey_result_id BigInt              @db.UnsignedBigInt
+  created_at             DateTime            @default(now()) @db.DateTime(0)
+  integration            integration         @relation(fields: [integration_id], references: [id], onUpdate: Restrict, map: "fk_nedap_survey_concept_order_integration_id")
+  taas_concept_order     taas_concept_order? @relation(fields: [taas_concept_order_id], references: [id], onUpdate: NoAction, map: "nedap_survey_concept_order_ibfk_1")
+
+  @@index([integration_id], map: "fk_nedap_survey_concept_order_integration_id")
+  @@index([taas_concept_order_id], map: "fk_taas_concept_order_id")
+}
+
+model nedap_survey_concept_return {
+  id                     Int                  @id @default(autoincrement()) @db.UnsignedInt
+  integration_id         Int                  @db.UnsignedInt
+  taas_concept_return_id Int?                 @db.UnsignedInt
+  nedap_survey_result_id BigInt               @db.UnsignedBigInt
+  created_at             DateTime             @default(now()) @db.DateTime(0)
+  integration            integration          @relation(fields: [integration_id], references: [id], onUpdate: Restrict, map: "fk_nedap_survey_concept_return_integration_id")
+  taas_concept_return    taas_concept_return? @relation(fields: [taas_concept_return_id], references: [id], onUpdate: NoAction, map: "nedap_survey_concept_return_ibfk_1")
+
+  @@index([integration_id], map: "fk_nedap_survey_concept_return_integration_id")
+  @@index([taas_concept_return_id], map: "fk_taas_concept_return_id")
+}
+
+model ons_integration_config {
+  id                      Int                     @id @default(autoincrement()) @db.UnsignedInt
+  relation_id             Int                     @db.UnsignedInt
+  integration_id          Int                     @db.UnsignedInt
+  certificate_name        String                  @db.VarChar(256)
+  created_at              DateTime?               @default(now()) @db.DateTime(0)
+  updated_at              DateTime?               @default(now()) @db.DateTime(0)
+  dashboard_relation      dashboard_relation      @relation(fields: [relation_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "ons_integration_config_ibfk_1")
+  integration             integration             @relation(fields: [integration_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "ons_integration_config_ibfk_2")
+  integration_certificate integration_certificate @relation(fields: [certificate_name], references: [name], onUpdate: NoAction, map: "ons_integration_config_ibfk_3")
+  ons_order_survey        ons_order_survey[]
+  ons_return_survey       ons_return_survey[]
+
+  @@index([certificate_name], map: "fk_ons_integration_config_certificate_name")
+  @@index([integration_id], map: "fk_ons_integration_config_integration_id")
+  @@index([relation_id], map: "fk_ons_integration_config_relation_id")
+}
+
+model ons_order_survey {
+  config_id              Int                    @db.UnsignedInt
+  survey_id              Int                    @db.UnsignedInt
+  created_at             DateTime?              @default(now()) @db.DateTime(0)
+  updated_at             DateTime?              @default(now()) @db.DateTime(0)
+  ons_integration_config ons_integration_config @relation(fields: [config_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "ons_order_survey_ibfk_1")
+
+  @@id([config_id, survey_id])
+}
+
+model ons_return_survey {
+  config_id              Int                    @db.UnsignedInt
+  survey_id              Int                    @db.UnsignedInt
+  created_at             DateTime?              @default(now()) @db.DateTime(0)
+  updated_at             DateTime?              @default(now()) @db.DateTime(0)
+  ons_integration_config ons_integration_config @relation(fields: [config_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "ons_return_survey_ibfk_1")
+
+  @@id([config_id, survey_id])
+}
+
+model permissions {
+  id                Int                 @id @default(autoincrement()) @db.UnsignedInt
+  name              String              @unique(map: "idx_permission_name") @db.VarChar(256)
+  description       String              @default("") @db.VarChar(256)
+  created_at        DateTime?           @default(now()) @db.DateTime(0)
+  updated_at        DateTime?           @default(now()) @db.DateTime(0)
+  group_permissions group_permissions[]
+}
+
+model schema_version {
+  installed_rank Int      @id
+  version        String?  @db.VarChar(50)
+  description    String   @db.VarChar(200)
+  type           String   @db.VarChar(20)
+  script         String   @db.VarChar(1000)
+  checksum       Int?
+  installed_by   String   @db.VarChar(100)
+  installed_on   DateTime @default(now()) @db.Timestamp(0)
+  execution_time Int
+  success        Boolean
+
+  @@index([success], map: "schema_version_s_idx")
+}
+
+model taas_concept_contact {
+  id                                                                                     Int                   @id @default(autoincrement()) @db.UnsignedInt
+  relation_id                                                                            Int?                  @db.UnsignedInt
+  email                                                                                  String?               @db.VarChar(256)
+  firstname                                                                              String?               @db.VarChar(128)
+  lastname                                                                               String?               @db.VarChar(128)
+  phone_number                                                                           String?               @db.VarChar(32)
+  phone_country_code                                                                     String?               @db.VarChar(8)
+  created_at                                                                             DateTime              @default(now()) @db.DateTime(0)
+  updated_at                                                                             DateTime              @default(now()) @db.DateTime(0)
+  dashboard_relation                                                                     dashboard_relation?   @relation(fields: [relation_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "taas_concept_contact_ibfk_1")
+  taas_concept_order_taas_concept_order_requester_idTotaas_concept_contact               taas_concept_order[]  @relation("taas_concept_order_requester_idTotaas_concept_contact")
+  taas_concept_order_taas_concept_order_receiver_idTotaas_concept_contact                taas_concept_order[]  @relation("taas_concept_order_receiver_idTotaas_concept_contact")
+  taas_concept_order_taas_concept_order_healthcare_professional_idTotaas_concept_contact taas_concept_order[]  @relation("taas_concept_order_healthcare_professional_idTotaas_concept_contact")
+  taas_concept_return                                                                    taas_concept_return[]
+
+  @@unique([relation_id, email], map: "idx_taas_order_contact_email_relation")
+}
+
+model taas_concept_delivery_address {
+  id                               Int                              @id @default(autoincrement()) @db.UnsignedInt
+  address_type_id                  Int                              @default(1) @db.UnsignedSmallInt
+  recipient                        String?                          @db.VarChar(256)
+  street                           String?                          @db.VarChar(256)
+  home_number                      Int?                             @db.UnsignedInt
+  home_number_extension            String?                          @db.VarChar(128)
+  city                             String?                          @db.VarChar(128)
+  zipcode                          String?                          @db.VarChar(32)
+  locationDescription              String?                          @db.VarChar(256)
+  country                          String?                          @db.VarChar(128)
+  created_at                       DateTime                         @default(now()) @db.DateTime(0)
+  updated_at                       DateTime                         @default(now()) @db.DateTime(0)
+  taas_order_delivery_address_type taas_order_delivery_address_type @relation(fields: [address_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "taas_concept_delivery_address_ibfk_1")
+  taas_concept_order               taas_concept_order[]
+  taas_concept_return              taas_concept_return[]
+
+  @@index([address_type_id], map: "fk_taas_order_delivery_address_type")
+}
+
+model taas_concept_order {
+  id                                                                                       Int                                     @id @default(autoincrement()) @db.UnsignedInt
+  integration_id                                                                           Int                                     @db.UnsignedInt
+  relation_id                                                                              Int?                                    @db.UnsignedInt
+  client_id                                                                                String?                                 @db.VarChar(256)
+  client_uuid                                                                              String?                                 @db.VarChar(256)
+  tessa_expert_needed                                                                      taas_concept_order_tessa_expert_needed? @default(unknown)
+  team_id                                                                                  String?                                 @db.VarChar(256)
+  hardware_type_id                                                                         Int                                     @default(1) @db.UnsignedTinyInt
+  address_id                                                                               Int?                                    @db.UnsignedInt
+  requester_id                                                                             Int?                                    @db.UnsignedInt
+  receiver_id                                                                              Int?                                    @db.UnsignedInt
+  healthcare_professional_id                                                               Int?                                    @db.UnsignedInt
+  discipline_id                                                                            Int?                                    @db.UnsignedInt
+  healthcare_demand                                                                        String?                                 @db.VarChar(1024)
+  notes                                                                                    String?                                 @db.VarChar(1024)
+  archived_at                                                                              DateTime?                               @db.DateTime(0)
+  created_at                                                                               DateTime                                @default(now()) @db.DateTime(0)
+  updated_at                                                                               DateTime                                @default(now()) @db.DateTime(0)
+  nedap_survey_concept_order                                                               nedap_survey_concept_order[]
+  hardware_type                                                                            hardware_type                           @relation(fields: [hardware_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_taas_concept_order_hardware_type_id")
+  taas_order_discipline                                                                    taas_order_discipline?                  @relation(fields: [discipline_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fkc_taas_order_discipline_id")
+  integration                                                                              integration                             @relation(fields: [integration_id], references: [id], onUpdate: Restrict, map: "taas_concept_order_ibfk_1")
+  dashboard_relation                                                                       dashboard_relation?                     @relation(fields: [relation_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "taas_concept_order_ibfk_2")
+  taas_concept_delivery_address                                                            taas_concept_delivery_address?          @relation(fields: [address_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "taas_concept_order_ibfk_3")
+  taas_concept_contact_taas_concept_order_requester_idTotaas_concept_contact               taas_concept_contact?                   @relation("taas_concept_order_requester_idTotaas_concept_contact", fields: [requester_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "taas_concept_order_ibfk_5")
+  taas_concept_contact_taas_concept_order_receiver_idTotaas_concept_contact                taas_concept_contact?                   @relation("taas_concept_order_receiver_idTotaas_concept_contact", fields: [receiver_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "taas_concept_order_ibfk_6")
+  taas_concept_contact_taas_concept_order_healthcare_professional_idTotaas_concept_contact taas_concept_contact?                   @relation("taas_concept_order_healthcare_professional_idTotaas_concept_contact", fields: [healthcare_professional_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "taas_concept_order_ibfk_7")
+
+  @@index([hardware_type_id], map: "fk_taas_concept_order_hardware_type_id")
+  @@index([address_id], map: "fk_taas_order_address_id")
+  @@index([healthcare_professional_id], map: "fk_taas_order_healthcare_professional_id")
+  @@index([integration_id], map: "fk_taas_order_integration_id")
+  @@index([receiver_id], map: "fk_taas_order_receiver_id")
+  @@index([relation_id], map: "fk_taas_order_relation_id")
+  @@index([requester_id], map: "fk_taas_order_requester_id")
+  @@index([discipline_id], map: "fkc_taas_order_discipline_id")
+}
+
+model taas_concept_return {
+  id                            Int                            @id @default(autoincrement()) @db.UnsignedInt
+  order_id                      Int?                           @db.UnsignedInt
+  integration_id                Int                            @db.UnsignedInt
+  relation_id                   Int?                           @db.UnsignedInt
+  client_id                     String?                        @db.VarChar(256)
+  client_uuid                   String?                        @db.VarChar(256)
+  returner_id                   Int?                           @db.UnsignedInt
+  return_reason                 String?                        @db.VarChar(2048)
+  pickup_address_id             Int?                           @db.UnsignedInt
+  notes                         String?                        @db.VarChar(1024)
+  tessa_code                    String?                        @db.VarChar(64)
+  archived_at                   DateTime?                      @db.DateTime(0)
+  created_at                    DateTime                       @default(now()) @db.DateTime(0)
+  updated_at                    DateTime                       @default(now()) @db.DateTime(0)
+  nedap_survey_concept_return   nedap_survey_concept_return[]
+  taas_order                    taas_order?                    @relation(fields: [order_id], references: [id], onUpdate: NoAction, map: "taas_concept_return_ibfk_1")
+  integration                   integration                    @relation(fields: [integration_id], references: [id], onUpdate: Restrict, map: "taas_concept_return_ibfk_2")
+  dashboard_relation            dashboard_relation?            @relation(fields: [relation_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "taas_concept_return_ibfk_3")
+  taas_concept_delivery_address taas_concept_delivery_address? @relation(fields: [pickup_address_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "taas_concept_return_ibfk_4")
+  taas_concept_contact          taas_concept_contact?          @relation(fields: [returner_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "taas_concept_return_ibfk_5")
+
+  @@index([returner_id], map: "fk_taas_concept_return_healthcare_professional_id")
+  @@index([integration_id], map: "fk_taas_concept_return_integration_id")
+  @@index([order_id], map: "fk_taas_concept_return_order_id")
+  @@index([pickup_address_id], map: "fk_taas_concept_return_pickup_address_id")
+  @@index([relation_id], map: "fk_taas_concept_return_relation_id")
+}
+
+model taas_order {
+  id                                                                                    Int                            @id @default(autoincrement()) @db.UnsignedInt
+  integration_id                                                                        Int                            @db.UnsignedInt
+  relation_id                                                                           Int                            @db.UnsignedInt
+  client_id                                                                             String                         @db.VarChar(256)
+  client_uuid                                                                           String?                        @db.VarChar(512)
+  tessa_expert_needed                                                                   taas_order_tessa_expert_needed @default(unknown)
+  tex_call_appointment_at                                                               DateTime?                      @db.DateTime(0)
+  team_id                                                                               String?                        @db.VarChar(1024)
+  hardware_type_id                                                                      Int                            @default(1) @db.UnsignedTinyInt
+  address_id                                                                            Int?                           @db.UnsignedInt
+  pickup_address_id                                                                     Int?                           @db.UnsignedInt
+  track_trace_code                                                                      String?                        @db.VarChar(64)
+  requester_id                                                                          Int                            @db.UnsignedInt
+  receiver_id                                                                           Int?                           @db.UnsignedInt
+  returner_id                                                                           Int?                           @db.UnsignedInt
+  healthcare_professional_id                                                            Int?                           @db.UnsignedInt
+  notes                                                                                 String?                        @db.VarChar(4096)
+  internal_notes                                                                        String?                        @db.Text
+  decline_reason                                                                        String?                        @db.VarChar(1024)
+  return_reject_reason                                                                  String?                        @db.VarChar(1024)
+  taas_id                                                                               Int?                           @db.UnsignedInt
+  created_at                                                                            DateTime                       @default(now()) @db.DateTime(0)
+  updated_at                                                                            DateTime                       @default(now()) @db.DateTime(0)
+  ecd_order                                                                             ecd_order[]
+  taas_concept_return                                                                   taas_concept_return[]
+  hardware_type                                                                         hardware_type                  @relation(fields: [hardware_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_taas_order_hardware_type_id")
+  taas_order_contact_taas_order_healthcare_professional_idTotaas_order_contact          taas_order_contact?            @relation("taas_order_healthcare_professional_idTotaas_order_contact", fields: [healthcare_professional_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_taas_order_healthcare_professional_id")
+  integration                                                                           integration                    @relation(fields: [integration_id], references: [id], onUpdate: Restrict, map: "taas_order_ibfk_1")
+  dashboard_relation                                                                    dashboard_relation             @relation(fields: [relation_id], references: [id], onUpdate: Restrict, map: "taas_order_ibfk_2")
+  taas_order_delivery_address_taas_order_address_idTotaas_order_delivery_address        taas_order_delivery_address?   @relation("taas_order_address_idTotaas_order_delivery_address", fields: [address_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "taas_order_ibfk_3")
+  taas_order_contact_taas_order_requester_idTotaas_order_contact                        taas_order_contact             @relation("taas_order_requester_idTotaas_order_contact", fields: [requester_id], references: [id], onUpdate: Restrict, map: "taas_order_ibfk_5")
+  taas_order_contact_taas_order_receiver_idTotaas_order_contact                         taas_order_contact?            @relation("taas_order_receiver_idTotaas_order_contact", fields: [receiver_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "taas_order_ibfk_6")
+  taas_order_contact_taas_order_returner_idTotaas_order_contact                         taas_order_contact?            @relation("taas_order_returner_idTotaas_order_contact", fields: [returner_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "taas_order_ibfk_7")
+  taas_subscription                                                                     taas_subscription?             @relation(fields: [taas_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "taas_order_ibfk_8")
+  taas_order_delivery_address_taas_order_pickup_address_idTotaas_order_delivery_address taas_order_delivery_address?   @relation("taas_order_pickup_address_idTotaas_order_delivery_address", fields: [pickup_address_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "taas_order_ibfk_9")
+  taas_order_info                                                                       taas_order_info[]
+  taas_order_installation                                                               taas_order_installation[]
+  taas_order_status                                                                     taas_order_status?
+
+  @@index([address_id], map: "fk_taas_order_address_id")
+  @@index([hardware_type_id], map: "fk_taas_order_hardware_type_id")
+  @@index([healthcare_professional_id], map: "fk_taas_order_healthcare_professional_id")
+  @@index([integration_id], map: "fk_taas_order_integration_id")
+  @@index([pickup_address_id], map: "fk_taas_order_pickup_address_id")
+  @@index([receiver_id], map: "fk_taas_order_receiver_id")
+  @@index([relation_id], map: "fk_taas_order_relation_id")
+  @@index([requester_id], map: "fk_taas_order_requester_id")
+  @@index([returner_id], map: "fk_taas_order_returner_id")
+  @@index([taas_id], map: "fk_taas_order_taas_id")
+}
+
+model taas_order_contact {
+  id                                                                   Int          @id @default(autoincrement()) @db.UnsignedInt
+  email                                                                String       @db.VarChar(256)
+  firstname                                                            String?      @db.VarChar(128)
+  lastname                                                             String?      @db.VarChar(128)
+  phone_number                                                         BigInt?      @db.UnsignedBigInt
+  created_at                                                           DateTime     @default(now()) @db.DateTime(0)
+  taas_order_taas_order_healthcare_professional_idTotaas_order_contact taas_order[] @relation("taas_order_healthcare_professional_idTotaas_order_contact")
+  taas_order_taas_order_requester_idTotaas_order_contact               taas_order[] @relation("taas_order_requester_idTotaas_order_contact")
+  taas_order_taas_order_receiver_idTotaas_order_contact                taas_order[] @relation("taas_order_receiver_idTotaas_order_contact")
+  taas_order_taas_order_returner_idTotaas_order_contact                taas_order[] @relation("taas_order_returner_idTotaas_order_contact")
+}
+
+model taas_order_default_requester {
+  id                 Int                @id @default(autoincrement()) @db.UnsignedInt
+  relation_id        Int                @unique(map: "idx_taas_order_default_requester_relation") @db.UnsignedInt
+  email              String             @db.VarChar(256)
+  firstname          String?            @db.VarChar(128)
+  lastname           String?            @db.VarChar(128)
+  phone_number       BigInt?            @db.UnsignedBigInt
+  created_at         DateTime           @default(now()) @db.DateTime(0)
+  updated_at         DateTime           @default(now()) @db.DateTime(0)
+  dashboard_relation dashboard_relation @relation(fields: [relation_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "taas_order_default_requester_ibfk_1")
+}
+
+model taas_order_delivery_address {
+  id                                                                   Int                              @id @default(autoincrement()) @db.UnsignedInt
+  address_type_id                                                      Int                              @default(1) @db.UnsignedSmallInt
+  recipient                                                            String                           @db.VarChar(256)
+  street                                                               String                           @db.VarChar(256)
+  home_number                                                          Int                              @db.UnsignedInt
+  home_number_extension                                                String?                          @db.VarChar(128)
+  city                                                                 String                           @db.VarChar(128)
+  zipcode                                                              String                           @db.VarChar(32)
+  locationDescription                                                  String?                          @db.VarChar(256)
+  country                                                              String                           @db.VarChar(128)
+  created_at                                                           DateTime                         @default(now()) @db.DateTime(0)
+  updated_at                                                           DateTime                         @default(now()) @db.DateTime(0)
+  taas_order_taas_order_address_idTotaas_order_delivery_address        taas_order[]                     @relation("taas_order_address_idTotaas_order_delivery_address")
+  taas_order_taas_order_pickup_address_idTotaas_order_delivery_address taas_order[]                     @relation("taas_order_pickup_address_idTotaas_order_delivery_address")
+  taas_order_delivery_address_type                                     taas_order_delivery_address_type @relation(fields: [address_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_taas_order_delivery_address_type")
+
+  @@index([address_type_id], map: "fk_taas_order_delivery_address_type")
+}
+
+model taas_order_delivery_address_type {
+  id                            Int                             @id @default(autoincrement()) @db.UnsignedSmallInt
+  name                          String                          @unique(map: "unique_name") @db.VarChar(256)
+  taas_concept_delivery_address taas_concept_delivery_address[]
+  taas_order_delivery_address   taas_order_delivery_address[]
+}
+
+model taas_order_discipline {
+  id                 Int                  @id @default(autoincrement()) @db.UnsignedInt
+  name               String               @unique(map: "idx_taas_order_discipline_name") @db.VarChar(64)
+  created_at         DateTime             @default(now()) @db.DateTime(0)
+  taas_concept_order taas_concept_order[]
+  taas_order_info    taas_order_info[]
+}
+
+model taas_order_installation {
+  id                                     Int                                     @id @default(autoincrement()) @db.UnsignedInt
+  taas_order_id                          Int                                     @db.UnsignedInt
+  installer_id                           Int                                     @db.UnsignedInt
+  success                                Int                                     @db.UnsignedTinyInt
+  failure_reason_id                      Int?                                    @db.UnsignedSmallInt
+  notes                                  String?                                 @db.Text
+  created_at                             DateTime                                @default(now()) @db.DateTime(0)
+  taas_order                             taas_order                              @relation(fields: [taas_order_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "taas_order_installation_ibfk_1")
+  taas_order_installer                   taas_order_installer                    @relation(fields: [installer_id], references: [id], onUpdate: Restrict, map: "taas_order_installation_ibfk_2")
+  taas_order_installation_failure_reason taas_order_installation_failure_reason? @relation(fields: [failure_reason_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "taas_order_installation_ibfk_3")
+
+  @@index([failure_reason_id], map: "fk_taas_order_installation_failure_reason_id")
+  @@index([installer_id], map: "fk_taas_order_installation_installer_id")
+  @@index([taas_order_id], map: "fk_taas_order_installation_taas_order_id")
+}
+
+model taas_order_installation_failure_reason {
+  id                      Int                       @id @default(autoincrement()) @db.UnsignedSmallInt
+  reason                  String                    @unique(map: "idx_taas_order_installation_failure_reason") @db.VarChar(255)
+  taas_order_installation taas_order_installation[]
+}
+
+model taas_order_installer {
+  id                      Int                       @id @default(autoincrement()) @db.UnsignedInt
+  identifier              String                    @unique(map: "idx_taas_order_installer_identifier") @db.VarChar(255)
+  taas_order_installation taas_order_installation[]
+}
+
+model taas_order_status {
+  taas_order_id             Int        @id @db.UnsignedInt
+  ordered_at                DateTime   @db.DateTime(0)
+  processing_at             DateTime?  @db.DateTime(0)
+  delivered_at              DateTime?  @db.DateTime(0)
+  activated_at              DateTime?  @db.DateTime(0)
+  return_process_started_at DateTime?  @db.DateTime(0)
+  return_accepted_at        DateTime?  @db.DateTime(0)
+  return_rejected_at        DateTime?  @db.DateTime(0)
+  declined_at               DateTime?  @db.DateTime(0)
+  created_at                DateTime   @default(now()) @db.DateTime(0)
+  updated_at                DateTime   @default(now()) @db.DateTime(0)
+  taas_order                taas_order @relation(fields: [taas_order_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "taas_order_status_ibfk_1")
+}
+
+model taas_subscription {
+  id                 Int                @id @default(autoincrement()) @db.UnsignedInt
+  serial_id          BigInt?            @unique(map: "serial_id") @db.UnsignedBigInt
+  relation_id        Int                @db.UnsignedInt
+  client_id          String?            @db.VarChar(256)
+  team_id            String?            @db.VarChar(1024)
+  hardware_type_id   Int                @default(1) @db.UnsignedTinyInt
+  start_at           DateTime?          @db.DateTime(0)
+  end_at             DateTime?          @db.DateTime(0)
+  shipped_at         DateTime?          @db.DateTime(0)
+  notes              String?            @db.Text
+  archived_at        DateTime?          @db.DateTime(0)
+  created_at         DateTime           @default(now()) @db.DateTime(0)
+  updated_at         DateTime           @default(now()) @db.DateTime(0)
+  taas_order         taas_order[]
+  hardware_type      hardware_type      @relation(fields: [hardware_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_taas_subscription_hardware_type_id")
+  dashboard_robot    dashboard_robot?   @relation(fields: [serial_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "taas_subscription_ibfk_1")
+  dashboard_relation dashboard_relation @relation(fields: [relation_id], references: [id], onUpdate: Restrict, map: "taas_subscription_ibfk_2")
+
+  @@index([relation_id], map: "fk_dashboard_taas_subscription_relation_id")
+  @@index([hardware_type_id], map: "fk_taas_subscription_hardware_type_id")
+}
+
+model taas_order_info {
+  id                    Int                    @id @default(autoincrement()) @db.UnsignedInt
+  taas_order_id         Int?                   @db.UnsignedInt
+  discipline_id         Int?                   @db.UnsignedInt
+  healthcare_demand     String?                @db.VarChar(1024)
+  return_reason         String?                @db.VarChar(2048)
+  created_at            DateTime?              @default(now()) @db.DateTime(0)
+  updated_at            DateTime?              @default(now()) @db.DateTime(0)
+  taas_order            taas_order?            @relation(fields: [taas_order_id], references: [id], onUpdate: NoAction, map: "taas_order_info_ibfk_1")
+  taas_order_discipline taas_order_discipline? @relation(fields: [discipline_id], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "taas_order_info_ibfk_2")
+
+  @@index([discipline_id], map: "fk_taas_order_info_discipline_id")
+  @@index([taas_order_id], map: "fk_taas_order_info_taas_order_id")
+}
+
+enum taas_concept_order_tessa_expert_needed {
+  yes
+  no
+  unknown
+}
+
+enum taas_order_tessa_expert_needed {
+  yes
+  no
+  unknown
+}
+
+enum dashboard_relation_teamleader_type {
+  company
+  contact
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@aweave/cli-plugin-tinybots-bitbucket",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "oclif": {
+    "commands": "./dist/commands",
+    "topicSeparator": " "
+  },
+  "dependencies": {
+    "@aweave/cli-shared": "workspace:*",
+    "@oclif/core": "^4.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "typescript": "^5.7.3"
+  }
+}

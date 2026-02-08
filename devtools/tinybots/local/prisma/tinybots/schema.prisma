@@ -1,0 +1,1943 @@
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../../src/generated/prisma/tinybots"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("TINYBOTS_DATABASE_URL")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model revhistory_music_collection {
+  id                   BigInt?  @db.UnsignedBigInt
+  revision             BigInt?  @map("_revision") @db.UnsignedBigInt
+  revhistory_timestamp DateTime @default(now()) @map("_revhistory_timestamp") @db.Timestamp(0)
+
+  @@index([revhistory_timestamp], map: "_revhistory_timestamp")
+  @@index([revision], map: "_revision")
+  @@index([id], map: "id")
+  @@map("_revhistory_music_collection")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model revhistory_playlist {
+  id                   BigInt?  @db.UnsignedBigInt
+  revision             BigInt?  @map("_revision") @db.UnsignedBigInt
+  revhistory_timestamp DateTime @default(now()) @map("_revhistory_timestamp") @db.Timestamp(0)
+
+  @@index([revhistory_timestamp], map: "_revhistory_timestamp")
+  @@index([revision], map: "_revision")
+  @@index([id], map: "id")
+  @@map("_revhistory_playlist")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model revhistory_playlist_entry {
+  playlist_id          Int?     @db.UnsignedInt
+  order                Int?     @db.SmallInt
+  revision             BigInt?  @map("_revision") @db.UnsignedBigInt
+  revhistory_timestamp DateTime @default(now()) @map("_revhistory_timestamp") @db.Timestamp(0)
+
+  @@index([revhistory_timestamp], map: "_revhistory_timestamp")
+  @@index([revision], map: "_revision")
+  @@index([playlist_id, order], map: "playlist_id")
+  @@map("_revhistory_playlist_entry")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model revhistory_robot_account {
+  id                   BigInt?  @db.UnsignedBigInt
+  revision             BigInt?  @map("_revision") @db.UnsignedBigInt
+  revhistory_timestamp DateTime @default(now()) @map("_revhistory_timestamp") @db.Timestamp(0)
+
+  @@index([revhistory_timestamp], map: "_revhistory_timestamp")
+  @@index([revision], map: "_revision")
+  @@index([id], map: "id")
+  @@map("_revhistory_robot_account")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model revhistory_robot_schema {
+  id                   Int?     @db.UnsignedInt
+  revision             BigInt?  @map("_revision") @db.UnsignedBigInt
+  revhistory_timestamp DateTime @default(now()) @map("_revhistory_timestamp") @db.Timestamp(0)
+
+  @@index([revhistory_timestamp], map: "_revhistory_timestamp")
+  @@index([revision], map: "_revision")
+  @@index([id], map: "id")
+  @@map("_revhistory_robot_schema")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model revhistory_user_account {
+  id                   BigInt?  @db.UnsignedBigInt
+  revision             BigInt?  @map("_revision") @db.UnsignedBigInt
+  revhistory_timestamp DateTime @default(now()) @map("_revhistory_timestamp") @db.Timestamp(0)
+
+  @@index([revhistory_timestamp], map: "_revhistory_timestamp")
+  @@index([revision], map: "_revision")
+  @@index([id], map: "id")
+  @@map("_revhistory_user_account")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model revhistory_user_profile {
+  user_id              BigInt?  @db.UnsignedBigInt
+  revision             BigInt?  @map("_revision") @db.UnsignedBigInt
+  revhistory_timestamp DateTime @default(now()) @map("_revhistory_timestamp") @db.Timestamp(0)
+
+  @@index([revhistory_timestamp], map: "_revhistory_timestamp")
+  @@index([revision], map: "_revision")
+  @@index([user_id], map: "user_id")
+  @@map("_revhistory_user_profile")
+  @@ignore
+}
+
+model revision_music_collection {
+  id                 BigInt?                                     @db.UnsignedBigInt
+  robot_id           Int?                                        @db.UnsignedInt
+  title              String?                                     @db.VarChar(128)
+  duration           DateTime?                                   @db.Time(0)
+  file_size_byte     Int?                                        @db.UnsignedInt
+  file_sha256_sum    Bytes?                                      @db.Binary(32)
+  file_status_id     Int?                                        @db.UnsignedTinyInt
+  content_type       String?                                     @db.VarChar(255)
+  revision           BigInt                                      @id @default(autoincrement()) @map("_revision") @db.UnsignedBigInt
+  revision_previous  BigInt?                                     @map("_revision_previous") @db.UnsignedBigInt
+  revision_action    revision_music_collection__revision_action? @map("_revision_action")
+  revision_timestamp DateTime?                                   @map("_revision_timestamp") @db.DateTime(0)
+
+  @@index([revision_previous], map: "_revision_previous")
+  @@index([robot_id], map: "fk_music_collection_robot")
+  @@index([id], map: "original_pk")
+  @@map("_revision_music_collection")
+}
+
+model revision_playlist {
+  id                 Int?                                @db.UnsignedInt
+  robot_id           Int?                                @db.UnsignedInt
+  name               String?                             @db.VarChar(128)
+  revision           BigInt                              @id @default(autoincrement()) @map("_revision") @db.UnsignedBigInt
+  revision_previous  BigInt?                             @map("_revision_previous") @db.UnsignedBigInt
+  revision_action    revision_playlist__revision_action? @map("_revision_action")
+  revision_timestamp DateTime?                           @map("_revision_timestamp") @db.DateTime(0)
+
+  @@index([revision_previous], map: "_revision_previous")
+  @@index([robot_id], map: "fk_playlist_robot")
+  @@index([id], map: "original_pk")
+  @@map("_revision_playlist")
+}
+
+model revision_playlist_entry {
+  playlist_id         Int?                                      @db.UnsignedInt
+  order               Int?                                      @db.SmallInt
+  music_collection_id BigInt?                                   @db.UnsignedBigInt
+  revision            BigInt                                    @id @default(autoincrement()) @map("_revision") @db.UnsignedBigInt
+  revision_previous   BigInt?                                   @map("_revision_previous") @db.UnsignedBigInt
+  revision_action     revision_playlist_entry__revision_action? @map("_revision_action")
+  revision_timestamp  DateTime?                                 @map("_revision_timestamp") @db.DateTime(0)
+
+  @@index([revision_previous], map: "_revision_previous")
+  @@index([music_collection_id], map: "fk_playlist_entry_music_collection")
+  @@index([playlist_id, order], map: "original_pk")
+  @@map("_revision_playlist_entry")
+}
+
+model revision_robot_account {
+  id                 BigInt?                                  @db.UnsignedBigInt
+  username           String?                                  @db.VarChar(36)
+  password           String?                                  @db.VarChar(128)
+  role               revision_robot_account_role?
+  account_status_id  Int?                                     @db.UnsignedTinyInt
+  last_active_at     DateTime?                                @db.DateTime(0)
+  revision           BigInt                                   @id @default(autoincrement()) @map("_revision") @db.UnsignedBigInt
+  revision_previous  BigInt?                                  @map("_revision_previous") @db.UnsignedBigInt
+  revision_action    revision_robot_account__revision_action? @map("_revision_action")
+  revision_timestamp DateTime?                                @map("_revision_timestamp") @db.DateTime(0)
+
+  @@index([revision_previous], map: "_revision_previous")
+  @@index([account_status_id], map: "fk_robot_account_status")
+  @@index([id], map: "original_pk")
+  @@map("_revision_robot_account")
+}
+
+model revision_robot_schema {
+  id                 Int?                                    @db.UnsignedInt
+  title              String                                  @default("") @db.VarChar(128)
+  robot_id           Int?                                    @db.UnsignedInt
+  task_id            BigInt?                                 @db.UnsignedBigInt
+  schedule_id        BigInt?
+  revision           BigInt                                  @id @default(autoincrement()) @map("_revision") @db.UnsignedBigInt
+  revision_previous  BigInt?                                 @map("_revision_previous") @db.UnsignedBigInt
+  revision_action    revision_robot_schema__revision_action? @map("_revision_action")
+  revision_timestamp DateTime?                               @map("_revision_timestamp") @db.DateTime(0)
+
+  @@index([revision_previous], map: "_revision_previous")
+  @@index([robot_id], map: "fk_schema_robot_account")
+  @@index([schedule_id], map: "fk_schema_schedule")
+  @@index([task_id], map: "fk_schema_task")
+  @@index([id], map: "original_pk")
+  @@map("_revision_robot_schema")
+}
+
+model revision_script_speech_interaction {
+  interaction_id      BigInt?                                              @db.UnsignedBigInt
+  interaction_title   String?                                              @db.VarChar(128)
+  robot_id            Int?                                                 @db.UnsignedInt
+  script_reference_id BigInt?                                              @db.UnsignedBigInt
+  revision_id         BigInt                                               @id @default(autoincrement()) @map("_revision_id") @db.UnsignedBigInt
+  revision_action     revision_script_speech_interaction__revision_action? @map("_revision_action")
+  revision_timestamp  DateTime?                                            @map("_revision_timestamp") @db.DateTime(0)
+
+  @@map("_revision_script_speech_interaction")
+}
+
+model revision_user_account {
+  id                 BigInt?                                 @db.UnsignedBigInt
+  email              String?                                 @db.VarChar(254)
+  password           String?                                 @db.VarChar(128)
+  account_status_id  Int?                                    @db.UnsignedTinyInt
+  last_active_at     DateTime?                               @db.DateTime(0)
+  revision           BigInt                                  @id @default(autoincrement()) @map("_revision") @db.UnsignedBigInt
+  revision_previous  BigInt?                                 @map("_revision_previous") @db.UnsignedBigInt
+  revision_action    revision_user_account__revision_action? @map("_revision_action")
+  revision_timestamp DateTime?                               @map("_revision_timestamp") @db.DateTime(0)
+
+  @@index([revision_previous], map: "_revision_previous")
+  @@index([id], map: "original_pk")
+  @@index([account_status_id], map: "user_account_status_fk")
+  @@map("_revision_user_account")
+}
+
+model revision_user_profile {
+  user_id            Int?                                    @db.UnsignedInt
+  first_name         String?                                 @db.VarChar(128)
+  last_name          String?                                 @db.VarChar(256)
+  phone_number       BigInt?                                 @db.UnsignedBigInt
+  revision           BigInt                                  @id @default(autoincrement()) @map("_revision") @db.UnsignedBigInt
+  revision_previous  BigInt?                                 @map("_revision_previous") @db.UnsignedBigInt
+  revision_action    revision_user_profile__revision_action? @map("_revision_action")
+  revision_timestamp DateTime?                               @map("_revision_timestamp") @db.DateTime(0)
+
+  @@index([revision_previous], map: "_revision_previous")
+  @@index([user_id], map: "original_pk")
+  @@map("_revision_user_profile")
+}
+
+model account_activation {
+  id              Int          @id @default(autoincrement()) @db.UnsignedInt
+  user_account_id Int          @db.UnsignedInt
+  activation_key  String       @unique(map: "idx_activation_key") @db.VarChar(32)
+  created_at      DateTime     @default(now()) @db.DateTime(0)
+  valid_until     DateTime     @db.DateTime(0)
+  activated_at    DateTime?    @db.DateTime(0)
+  user_account    user_account @relation(fields: [user_account_id], references: [id], onUpdate: Restrict, map: "account_activation_ibfk_1")
+
+  @@index([user_account_id], map: "fk_user_account_account_activation")
+}
+
+model audio_transcription_event {
+  id            BigInt         @id @default(autoincrement()) @db.UnsignedBigInt
+  robot_id      Int?           @db.UnsignedInt
+  created_at    DateTime       @default(now()) @db.DateTime(0)
+  robot_account robot_account? @relation(fields: [robot_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "audio_transcription_event_ibfk_1")
+
+  @@index([robot_id], map: "robot_id")
+}
+
+model bounced_user_account {
+  id           BigInt        @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id      Int?          @db.UnsignedInt
+  email        String        @db.VarChar(254)
+  bounces      Int           @default(1) @db.SmallInt
+  created_at   DateTime      @default(now()) @db.DateTime(0)
+  updated_at   DateTime      @default(now()) @db.DateTime(0)
+  user_account user_account? @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_bounced_user_account_user_id")
+
+  @@unique([user_id, email], map: "user_id")
+}
+
+model client_relation_role {
+  id                Int                 @id @default(autoincrement()) @db.UnsignedTinyInt
+  name              String              @unique(map: "idx_name") @db.VarChar(64)
+  updated_at        DateTime            @default(now()) @db.DateTime(0)
+  created_at        DateTime            @default(now()) @db.DateTime(0)
+  user_robot        user_robot[]
+  user_robot_invite user_robot_invite[]
+}
+
+model closed_question_execution_data {
+  id                       BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  script_step_execution_id BigInt                @db.UnsignedBigInt
+  answer                   String?               @db.VarChar(16)
+  probability              Decimal?              @db.Decimal(5, 4)
+  created_at               DateTime              @default(now()) @db.DateTime(0)
+  script_step_execution    script_step_execution @relation(fields: [script_step_execution_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "closed_question_execution_data_ibfk_1")
+
+  @@index([script_step_execution_id], map: "fk_cqed_script_step_execution")
+}
+
+model data_feature {
+  id                      Int                       @id @default(autoincrement()) @db.UnsignedInt
+  name                    String                    @unique(map: "name") @db.VarChar(256)
+  feature_data_permission feature_data_permission[]
+}
+
+model data_permission {
+  id                      Int                       @id @default(autoincrement()) @db.UnsignedInt
+  name                    String                    @unique(map: "name") @db.VarChar(256)
+  feature_data_permission feature_data_permission[]
+  robot_data_permission   robot_data_permission[]
+}
+
+model default_script_speech_interaction {
+  id                                              Int                                               @id @default(autoincrement()) @db.UnsignedInt
+  base_ref_id                                     Int                                               @db.UnsignedInt
+  version                                         Int                                               @db.UnsignedSmallInt
+  script_speech_interaction_id                    BigInt                                            @db.UnsignedBigInt
+  script_reference_id                             BigInt                                            @db.UnsignedBigInt
+  modified_at                                     DateTime                                          @db.DateTime(0)
+  created_at                                      DateTime?                                         @default(now()) @db.DateTime(0)
+  updated_at                                      DateTime?                                         @default(now()) @db.DateTime(0)
+  hardware_types_hash                             String                                            @default("") @map("__hardware_types_hash") @db.VarChar(64)
+  default_script_speech_interaction_base_ref      default_script_speech_interaction_base_ref        @relation(fields: [base_ref_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_default_speech_interaction_interaction_base_ref")
+  script_reference                                script_reference                                  @relation(fields: [script_reference_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_default_speech_interaction_script_reference_id")
+  script_speech_interaction                       script_speech_interaction                         @relation(fields: [script_speech_interaction_id], references: [id], onUpdate: Restrict, map: "fk_default_speech_interaction_script_speech_interaction_id")
+  default_script_speech_interaction_hardware_type default_script_speech_interaction_hardware_type[]
+
+  @@unique([version, base_ref_id, hardware_types_hash], map: "unique_default_script_name_version_hardware_types")
+  @@index([base_ref_id], map: "fk_default_speech_interaction_interaction_base_ref")
+  @@index([script_reference_id], map: "fk_default_speech_interaction_script_reference_id")
+  @@index([script_speech_interaction_id], map: "fk_default_speech_interaction_script_speech_interaction_id")
+}
+
+model default_script_speech_interaction_base_ref {
+  id                                         Int                                          @id @default(autoincrement()) @db.UnsignedInt
+  name                                       String                                       @unique(map: "idx_default_script_speech_interaction_base_ref_name") @db.VarChar(128)
+  created_at                                 DateTime?                                    @default(now()) @db.DateTime(0)
+  default_script_speech_interaction          default_script_speech_interaction[]
+  disabled_default_script_speech_interaction disabled_default_script_speech_interaction[]
+}
+
+model default_script_speech_interaction_hardware_type {
+  default_script_id                 Int                               @db.UnsignedInt
+  hardware_type_id                  Int                               @db.UnsignedTinyInt
+  hardware_type                     hardware_type                     @relation(fields: [hardware_type_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_default_script_hardware_type_hardware_type_id")
+  default_script_speech_interaction default_script_speech_interaction @relation(fields: [default_script_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_default_script_hardware_type_script_id")
+
+  @@id([default_script_id, hardware_type_id])
+  @@index([hardware_type_id], map: "fk_default_script_hardware_type_hardware_type_id")
+}
+
+model direct_reminder {
+  id               Int           @id @default(autoincrement()) @db.UnsignedInt
+  robot_id         Int           @db.UnsignedInt
+  task_category_id Int           @db.UnsignedSmallInt
+  deliveredAt      DateTime?     @default(now()) @db.DateTime(0)
+  executedAt       DateTime?     @db.DateTime(0)
+  greeting         String?       @db.VarChar(64)
+  salutation       String?       @db.VarChar(128)
+  call_to_action   String?       @db.VarChar(256)
+  pronounce_time   Boolean       @db.Bit(1)
+  occurrences      Int?          @default(0) @db.UnsignedInt
+  interval         Int?          @default(0) @db.UnsignedInt
+  robot_account    robot_account @relation(fields: [robot_id], references: [id], onUpdate: Restrict, map: "direct_reminder_ibfk_1")
+  task_category    task_category @relation(fields: [task_category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "direct_reminder_ibfk_2")
+
+  @@index([robot_id], map: "fk_direct_reminder_robot")
+  @@index([task_category_id], map: "fk_direct_reminder_task_category")
+}
+
+model disabled_default_script_speech_interaction {
+  base_ref_id                                Int                                        @db.UnsignedInt
+  robot_id                                   Int                                        @db.UnsignedInt
+  created_at                                 DateTime?                                  @default(now()) @db.DateTime(0)
+  updated_at                                 DateTime?                                  @default(now()) @db.DateTime(0)
+  default_script_speech_interaction_base_ref default_script_speech_interaction_base_ref @relation(fields: [base_ref_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_disabled_default_speech_interaction_interaction_base_ref")
+  robot_account                              robot_account                              @relation(fields: [robot_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_disabled_default_speech_interaction_interaction_robot_id")
+
+  @@id([base_ref_id, robot_id])
+  @@index([robot_id], map: "fk_disabled_default_speech_interaction_interaction_robot_id")
+}
+
+model disabled_script_speech_interaction {
+  robot_id                     Int                       @db.UnsignedInt
+  script_speech_interaction_id BigInt                    @db.UnsignedBigInt
+  created_at                   DateTime?                 @default(now()) @db.DateTime(0)
+  robot_account                robot_account             @relation(fields: [robot_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_disabled_speech_interaction_robot_id")
+  script_speech_interaction    script_speech_interaction @relation(fields: [script_speech_interaction_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_disabled_speech_interaction_script_speech_interaction_id")
+
+  @@id([robot_id, script_speech_interaction_id])
+  @@index([script_speech_interaction_id], map: "fk_disabled_speech_interaction_script_speech_interaction_id")
+}
+
+model email_change_verification {
+  id               Int          @id @default(autoincrement()) @db.UnsignedInt
+  user_id          Int          @db.UnsignedInt
+  verification_key String       @db.VarChar(12)
+  created_at       DateTime?    @default(now()) @db.DateTime(0)
+  valid_until      DateTime     @db.DateTime(0)
+  user_account     user_account @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "email_change_verification_ibfk_1")
+
+  @@unique([user_id, verification_key], map: "idx_user_key")
+}
+
+model eula_config {
+  id           Int            @id @default(autoincrement()) @db.UnsignedSmallInt
+  version_url  String         @unique(map: "version_url") @db.VarChar(128)
+  valid_from   DateTime       @db.DateTime(0)
+  valid_until  DateTime       @db.DateTime(0)
+  created_at   DateTime       @default(now()) @db.DateTime(0)
+  user_account user_account[]
+}
+
+model event_provider {
+  id             Int              @id @default(autoincrement()) @db.UnsignedInt
+  name           String           @unique(map: "unique_provider_name") @db.VarChar(128)
+  description    String?          @db.VarChar(256)
+  created_at     DateTime?        @default(now()) @db.Timestamp(0)
+  updated_at     DateTime?        @default(now()) @db.Timestamp(0)
+  incoming_event incoming_event[]
+}
+
+model event_schema {
+  id                        BigInt                      @id @default(autoincrement()) @db.UnsignedBigInt
+  name                      String?                     @unique(map: "unique_event_schema_name") @db.VarChar(256)
+  description               String?                     @db.VarChar(512)
+  level                     Int                         @db.UnsignedTinyInt
+  is_active                 Boolean                     @default(true)
+  created_at                DateTime?                   @default(now()) @db.Timestamp(0)
+  updated_at                DateTime?                   @default(now()) @db.Timestamp(0)
+  has_trigger               Boolean                     @default(false)
+  event_subscription_detail event_subscription_detail[]
+  event_trigger_setting     event_trigger_setting[]
+  incoming_event            incoming_event[]
+
+  @@index([updated_at], map: "idx_event_schema_updated_at")
+}
+
+model event_subscription {
+  id                        BigInt                      @id @default(autoincrement()) @db.UnsignedBigInt
+  robot_id                  Int                         @db.UnsignedInt
+  is_active                 Boolean                     @default(true)
+  created_at                DateTime?                   @default(now()) @db.Timestamp(0)
+  updated_at                DateTime?                   @default(now()) @db.Timestamp(0)
+  subscription_type         Int                         @db.UnsignedTinyInt
+  queue                     String?                     @db.VarChar(128)
+  robot_account             robot_account               @relation(fields: [robot_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_event_subscription_robot_id")
+  event_subscription_detail event_subscription_detail[]
+  outgoing_event            outgoing_event[]
+  status_check              status_check[]
+
+  @@index([robot_id, is_active], map: "event_subscription_robot_active")
+  @@index([subscription_type], map: "idx_event_subscription_type")
+  @@index([queue], map: "idx_event_subscription_queue")
+}
+
+model event_subscription_detail {
+  subscription_id    BigInt             @db.UnsignedBigInt
+  event_type_id      BigInt             @db.UnsignedBigInt
+  event_subscription event_subscription @relation(fields: [subscription_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_event_subscription_detail_id")
+  event_schema       event_schema       @relation(fields: [event_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_event_subscription_event_type_id")
+
+  @@id([subscription_id, event_type_id])
+  @@index([event_type_id], map: "idx_event_subscription_detail_event_type")
+}
+
+model event_trigger {
+  id                    BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  setting_id            BigInt                @db.UnsignedBigInt
+  robot_id              Int                   @db.UnsignedInt
+  status                String                @db.VarChar(64)
+  script_reference_id   BigInt                @db.UnsignedBigInt
+  outgoing_event_id     BigInt                @db.UnsignedBigInt
+  level                 Int                   @db.UnsignedTinyInt
+  executed_at           DateTime?             @db.Timestamp(0)
+  expected_executed_at  DateTime              @db.Timestamp(0)
+  completed_at          DateTime?             @db.Timestamp(0)
+  lock_id               String?               @db.VarChar(256)
+  created_at            DateTime?             @default(now()) @db.Timestamp(0)
+  updated_at            DateTime?             @default(now()) @db.Timestamp(0)
+  outgoing_event        outgoing_event        @relation(fields: [outgoing_event_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_event_trigger_outgoing_event_id")
+  robot_account         robot_account         @relation(fields: [robot_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_event_trigger_robot_id")
+  script_reference      script_reference      @relation(fields: [script_reference_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_event_trigger_script_ref_id")
+  event_trigger_setting event_trigger_setting @relation(fields: [setting_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_event_trigger_setting_id")
+  script_execution      script_execution[]
+
+  @@index([outgoing_event_id], map: "fk_event_trigger_outgoing_event_id")
+  @@index([robot_id], map: "fk_event_trigger_robot_id")
+  @@index([script_reference_id], map: "fk_event_trigger_script_ref_id")
+  @@index([setting_id], map: "fk_event_trigger_setting_id")
+  @@index([expected_executed_at], map: "idx_event_trigger_by_expected_executed_at")
+  @@index([executed_at], map: "idx_event_trigger_executed_at")
+  @@index([lock_id], map: "idx_event_trigger_lock_id")
+  @@index([status], map: "idx_event_trigger_status")
+  @@index([updated_at], map: "idx_event_trigger_updated_at")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model event_trigger_setting {
+  id                            BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  robot_id                      Int?             @db.UnsignedInt
+  event_type_id                 BigInt           @db.UnsignedBigInt
+  max_concurrent_triggers       Int?             @db.UnsignedSmallInt
+  allowed_concurrency_timeframe Int?             @db.UnsignedInt
+  allowed_start_time            DateTime?        @db.Timestamp(0)
+  allowed_end_time              DateTime?        @db.Timestamp(0)
+  max_validity_duration         Int?             @db.UnsignedInt
+  is_reschedulable              Boolean?         @default(false)
+  is_default                    Boolean?         @default(false)
+  created_at                    DateTime?        @default(now()) @db.Timestamp(0)
+  updated_at                    DateTime?        @default(now()) @db.Timestamp(0)
+  default_script_reference_id   BigInt           @db.UnsignedBigInt
+  allowed_days_of_week          String?          @db.VarChar(100)
+  event_trigger                 event_trigger[]
+  event_schema                  event_schema     @relation(fields: [event_type_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_event_trigger_event_type_id")
+  script_reference              script_reference @relation(fields: [default_script_reference_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_event_trigger_setting_default_script_ref_id")
+  robot_account                 robot_account?   @relation(fields: [robot_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_event_trigger_setting_robot_id")
+
+  @@index([event_type_id], map: "fk_event_trigger_event_type_id")
+  @@index([default_script_reference_id], map: "fk_event_trigger_setting_default_script_ref_id")
+  @@index([robot_id, event_type_id], map: "idx_event_trigger_setting_robot_event")
+}
+
+model external_account {
+  issuer          String       @db.VarChar(255)
+  unique_id       String       @db.VarChar(255)
+  user_account_id Int          @db.UnsignedInt
+  created_at      DateTime?    @default(now()) @db.DateTime(0)
+  user_account    user_account @relation(fields: [user_account_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_external_account_user_account_id")
+
+  @@id([issuer, unique_id])
+  @@index([user_account_id], map: "fk_external_account_user_account_id")
+}
+
+model feature_data_permission {
+  feature_id      Int             @db.UnsignedInt
+  permission_id   Int             @db.UnsignedInt
+  data_feature    data_feature    @relation(fields: [feature_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "feature_data_permission_ibfk_1")
+  data_permission data_permission @relation(fields: [permission_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "feature_data_permission_ibfk_2")
+
+  @@id([feature_id, permission_id])
+  @@index([permission_id], map: "permission_id")
+}
+
+model hardware_type {
+  id                                              Int                                               @id @default(autoincrement()) @db.UnsignedTinyInt
+  name                                            String                                            @unique(map: "idx_hardware_type_name") @db.VarChar(64)
+  created_at                                      DateTime?                                         @default(now()) @db.DateTime(0)
+  default_script_speech_interaction_hardware_type default_script_speech_interaction_hardware_type[]
+}
+
+model inactive_robot_account_delete_process {
+  id                              BigInt                            @id @default(autoincrement()) @db.UnsignedBigInt
+  robot_id                        Int?                              @db.UnsignedInt
+  robot_serial                    String?                           @db.VarChar(36)
+  canceled_at                     DateTime?                         @db.DateTime(0)
+  deleted_at                      DateTime?                         @db.DateTime(0)
+  created_at                      DateTime                          @default(now()) @db.DateTime(0)
+  robot_account                   robot_account?                    @relation(fields: [robot_id], references: [id], onUpdate: NoAction, map: "fk_inactive_robot_account_delete_process_robot_id")
+  inactive_robot_email_sent_event inactive_robot_email_sent_event[]
+
+  @@index([robot_id], map: "fk_inactive_robot_account_delete_process_robot_id")
+}
+
+model inactive_robot_email_sent_event {
+  id                                       BigInt                                           @id @default(autoincrement()) @db.UnsignedBigInt
+  inactive_robot_account_delete_process_id BigInt?                                          @db.UnsignedBigInt
+  sent_to_email                            String                                           @db.VarChar(255)
+  not_sent_reason                          inactive_robot_email_sent_event_not_sent_reason?
+  created_at                               DateTime                                         @default(now()) @db.DateTime(0)
+  inactive_robot_account_delete_process    inactive_robot_account_delete_process?           @relation(fields: [inactive_robot_account_delete_process_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_inactive_email_robot_delete_process_id")
+
+  @@index([inactive_robot_account_delete_process_id], map: "fk_inactive_email_robot_delete_process_id")
+}
+
+model inactive_user_account_delete_process {
+  id                             BigInt                           @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id                        Int?                             @db.UnsignedInt
+  user_email                     String                           @db.VarChar(255)
+  verified_user                  Boolean
+  canceled_at                    DateTime?                        @db.DateTime(0)
+  deleted_at                     DateTime?                        @db.DateTime(0)
+  created_at                     DateTime                         @default(now()) @db.DateTime(0)
+  user_account                   user_account?                    @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "fk_inactive_user_account_delete_process_user_id")
+  inactive_user_email_sent_event inactive_user_email_sent_event[]
+
+  @@index([user_id], map: "fk_inactive_user_account_delete_process_user_id")
+}
+
+model inactive_user_email_sent_event {
+  id                                      BigInt                                          @id @default(autoincrement()) @db.UnsignedBigInt
+  inactive_user_account_delete_process_id BigInt?                                         @db.UnsignedBigInt
+  not_sent_reason                         inactive_user_email_sent_event_not_sent_reason?
+  created_at                              DateTime                                        @default(now()) @db.DateTime(0)
+  inactive_user_account_delete_process    inactive_user_account_delete_process?           @relation(fields: [inactive_user_account_delete_process_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_inactive_email_user_delete_process_id")
+
+  @@index([inactive_user_account_delete_process_id], map: "fk_inactive_email_user_delete_process_id")
+}
+
+model incoming_event {
+  id                  BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  event_type_id       BigInt                @db.UnsignedBigInt
+  level               Int                   @db.UnsignedTinyInt
+  robot_id            Int                   @db.UnsignedInt
+  reference_id        String?               @db.VarChar(256)
+  provider_id         Int                   @db.UnsignedInt
+  created_at          DateTime?             @default(now()) @db.Timestamp(0)
+  updated_at          DateTime?             @default(now()) @db.Timestamp(0)
+  event_schema        event_schema          @relation(fields: [event_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_incoming_evens_event_type_id")
+  event_provider      event_provider        @relation(fields: [provider_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_incoming_event_provider")
+  robot_account       robot_account         @relation(fields: [robot_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_incoming_event_robot_id")
+  outgoing_event      outgoing_event[]
+  status_check_record status_check_record[]
+
+  @@index([event_type_id], map: "fk_incoming_evens_event_type_id")
+  @@index([provider_id], map: "fk_incoming_event_provider")
+  @@index([created_at], map: "idx_incoming_events_created_at")
+  @@index([robot_id], map: "idx_incoming_events_robot_id")
+}
+
+model language_tag {
+  id                                                              Int              @id @default(autoincrement()) @db.UnsignedSmallInt
+  language_tag                                                    String           @unique(map: "idx_language_tag") @db.VarChar(12)
+  robot_settings_robot_settings_default_language_idTolanguage_tag robot_settings[] @relation("robot_settings_default_language_idTolanguage_tag")
+  robot_settings_robot_settings_ui_language_idTolanguage_tag      robot_settings[] @relation("robot_settings_ui_language_idTolanguage_tag")
+  script_version                                                  script_version[]
+}
+
+model multiple_choice_execution_data {
+  id                       BigInt                                        @id @default(autoincrement()) @db.UnsignedBigInt
+  script_step_execution_id BigInt                                        @db.UnsignedBigInt
+  intention_type           multiple_choice_execution_data_intention_type
+  answer                   String?                                       @db.VarChar(128)
+  created_at               DateTime                                      @default(now()) @db.DateTime(0)
+  script_step_execution    script_step_execution                         @relation(fields: [script_step_execution_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "multiple_choice_execution_data_ibfk_1")
+
+  @@index([script_step_execution_id], map: "fk_mcqed_script_step_execution")
+}
+
+model music_collection {
+  id                BigInt            @id @default(autoincrement()) @db.UnsignedBigInt
+  robot_id          Int               @db.UnsignedInt
+  title             String            @db.VarChar(128)
+  duration          DateTime          @db.Time(0)
+  file_size_byte    Int               @db.UnsignedInt
+  file_sha256_sum   Bytes             @db.Binary(32)
+  file_status_id    Int               @db.UnsignedTinyInt
+  content_type      String            @db.VarChar(255)
+  created_at        DateTime          @db.DateTime(0)
+  updated_at        DateTime          @default(now()) @db.DateTime(0)
+  revision          BigInt?           @unique(map: "_revision") @map("_revision") @db.UnsignedBigInt
+  robot_account     robot_account     @relation(fields: [robot_id], references: [id], onUpdate: Restrict, map: "music_collection_ibfk_1")
+  music_file_status music_file_status @relation(fields: [file_status_id], references: [id], onUpdate: Restrict, map: "music_collection_ibfk_2")
+  playlist_entry    playlist_entry[]
+
+  @@index([file_status_id], map: "fk_music_collection_file_status")
+  @@index([robot_id], map: "fk_music_collection_robot")
+}
+
+model music_file_status {
+  id               Int                @id @db.UnsignedTinyInt
+  status           String?            @unique(map: "idx_music_file_status") @db.VarChar(16)
+  created_at       DateTime           @default(now()) @db.DateTime(0)
+  music_collection music_collection[]
+}
+
+model music_task {
+  id               BigInt         @id @default(autoincrement()) @db.UnsignedBigInt
+  task_category_id Int            @db.UnsignedSmallInt
+  playlist_id      Int?           @db.UnsignedInt
+  created_at       DateTime       @default(now()) @db.DateTime(0)
+  task_category    task_category  @relation(fields: [task_category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "music_task_ibfk_1")
+  playlist         playlist?      @relation(fields: [playlist_id], references: [id], onUpdate: Restrict, map: "music_task_ibfk_3")
+  robot_schema     robot_schema[]
+
+  @@index([playlist_id], map: "fk_question_task_playlist_2")
+  @@index([task_category_id], map: "fk_question_task_task_category")
+}
+
+model notification {
+  id                   Int                 @id @default(autoincrement()) @db.UnsignedInt
+  uuid                 String              @unique(map: "idx_uuid") @db.VarChar(36)
+  title                String              @db.VarChar(128)
+  content              String              @db.VarChar(2048)
+  start_date           DateTime            @db.DateTime(0)
+  end_date             DateTime            @db.DateTime(0)
+  notification_type_id Int                 @db.UnsignedSmallInt
+  app_version          String              @db.VarChar(16)
+  created_at           DateTime?           @default(now()) @db.DateTime(0)
+  updated_at           DateTime?           @default(now()) @db.DateTime(0)
+  notification_type    notification_type   @relation(fields: [notification_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "notification_ibfk_1")
+  user_notification    user_notification[] @ignore
+
+  @@index([notification_type_id], map: "fk_notification_notification_type_id")
+}
+
+model notification_type {
+  id           Int            @id @default(autoincrement()) @db.UnsignedSmallInt
+  name         String         @db.VarChar(64)
+  created_at   DateTime?      @default(now()) @db.DateTime(0)
+  notification notification[]
+}
+
+model offline_notification_settings {
+  robot_contact_id    Int           @id @db.UnsignedInt
+  notification_delay  Int           @default(300) @db.UnsignedInt
+  online_notification Int           @default(0) @db.UnsignedTinyInt
+  last_notified       DateTime?     @db.DateTime(0)
+  last_checked        DateTime?     @db.DateTime(0)
+  created_at          DateTime?     @default(now()) @db.DateTime(0)
+  updated_at          DateTime?     @default(now()) @db.DateTime(0)
+  robot_contact       robot_contact @relation(fields: [robot_contact_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "offline_notification_settings_ibfk_2")
+}
+
+model organisational_robot {
+  robot_id       Int           @db.UnsignedInt
+  relation_id    BigInt        @db.UnsignedBigInt
+  template_group String        @db.VarChar(256)
+  created_at     DateTime      @default(now()) @db.DateTime(0)
+  robot_account  robot_account @relation(fields: [robot_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "organisational_robot_ibfk_1")
+
+  @@id([robot_id, relation_id])
+}
+
+model outgoing_event {
+  id                  BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  source_event_id     BigInt                @db.UnsignedBigInt
+  subscription_id     BigInt                @db.UnsignedBigInt
+  status              String                @db.VarChar(64)
+  created_at          DateTime?             @default(now()) @db.Timestamp(0)
+  updated_at          DateTime?             @default(now()) @db.Timestamp(0)
+  event_trigger       event_trigger[]
+  event_subscription  event_subscription    @relation(fields: [subscription_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_outgoing_event_subscription_id")
+  incoming_event      incoming_event        @relation(fields: [source_event_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_outgoing_events_source")
+  status_check_record status_check_record[]
+
+  @@index([subscription_id], map: "fk_outgoing_event_subscription_id")
+  @@index([source_event_id], map: "fk_outgoing_events_source")
+}
+
+model pairing_pin {
+  robot_id      Int           @id @db.UnsignedInt
+  pin           String        @unique(map: "idx_pin") @db.VarChar(16)
+  sent_to_email String        @db.VarChar(255)
+  created_at    DateTime?     @default(now()) @db.DateTime(0)
+  paired_at     DateTime?     @db.DateTime(0)
+  robot_account robot_account @relation(fields: [robot_id], references: [id], onUpdate: Restrict, map: "pairing_pin_ibfk_1")
+}
+
+model pending_asr_feedback {
+  id                BigInt        @id @default(autoincrement()) @db.UnsignedBigInt
+  robot_id          Int           @db.UnsignedInt
+  upload_id         String        @unique(map: "idx_pending_asr_feedback_upload_id") @db.VarChar(36)
+  meta_data         Json          @map("meta-data")
+  audio_uploaded_at DateTime?     @db.DateTime(0)
+  created_at        DateTime      @default(now()) @db.DateTime(0)
+  robot_account     robot_account @relation(fields: [robot_id], references: [id], onUpdate: Restrict, map: "pending_asr_feedback_ibfk_1")
+
+  @@index([robot_id], map: "fk_pending_asr_feedback_robot_account")
+}
+
+model playlist {
+  id             Int              @id @default(autoincrement()) @db.UnsignedInt
+  robot_id       Int              @db.UnsignedInt
+  name           String           @db.VarChar(128)
+  created_at     DateTime         @db.DateTime(0)
+  updated_at     DateTime         @default(now()) @db.DateTime(0)
+  revision       BigInt?          @unique(map: "_revision") @map("_revision") @db.UnsignedBigInt
+  music_task     music_task[]
+  robot_account  robot_account    @relation(fields: [robot_id], references: [id], onUpdate: Restrict, map: "playlist_ibfk_1")
+  playlist_entry playlist_entry[]
+
+  @@index([robot_id], map: "fk_playlist_robot")
+}
+
+model playlist_entry {
+  playlist_id         Int              @db.UnsignedInt
+  order               Int              @db.SmallInt
+  music_collection_id BigInt           @db.UnsignedBigInt
+  created_at          DateTime         @db.DateTime(0)
+  revision            BigInt?          @unique(map: "_revision") @map("_revision") @db.UnsignedBigInt
+  playlist            playlist         @relation(fields: [playlist_id], references: [id], onUpdate: Restrict, map: "playlist_entry_ibfk_1")
+  music_collection    music_collection @relation(fields: [music_collection_id], references: [id], onUpdate: Restrict, map: "playlist_entry_ibfk_2")
+
+  @@id([playlist_id, order])
+  @@index([music_collection_id], map: "fk_playlist_entry_music_collection")
+}
+
+model question_answer {
+  question_id   BigInt        @db.UnsignedBigInt
+  time          DateTime      @db.DateTime(0)
+  answer        String?       @db.VarChar(64)
+  probability   Decimal       @db.Decimal(9, 8)
+  created_at    DateTime      @default(now()) @db.DateTime(0)
+  question_task question_task @relation(fields: [question_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "question_answer_ibfk_1")
+
+  @@id([question_id, time])
+}
+
+model question_task {
+  id               BigInt            @id @default(autoincrement()) @db.UnsignedBigInt
+  task_category_id Int               @db.UnsignedSmallInt
+  greeting         String?           @db.VarChar(64)
+  salutation       String?           @db.VarChar(128)
+  pronounce_time   Boolean           @db.Bit(1)
+  question         String?           @db.VarChar(256)
+  relevant_for     Int               @db.UnsignedSmallInt
+  created_at       DateTime          @default(now()) @db.DateTime(0)
+  question_answer  question_answer[]
+  task_category    task_category     @relation(fields: [task_category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "question_task_ibfk_1")
+  robot_schema     robot_schema[]
+
+  @@index([task_category_id], map: "fk_question_task_task_category")
+}
+
+model report_api_keys {
+  id             Int         @id @default(autoincrement()) @db.UnsignedSmallInt
+  report_type_id Int         @db.UnsignedSmallInt
+  api_key        String      @db.VarChar(4096)
+  url            String?     @db.VarChar(256)
+  created_at     DateTime    @default(now()) @db.DateTime(0)
+  updated_at     DateTime    @default(now()) @db.DateTime(0)
+  report_type    report_type @relation(fields: [report_type_id], references: [id], onUpdate: Restrict, map: "report_api_keys_ibfk_1")
+
+  @@unique([report_type_id, url], map: "unique_api_key")
+}
+
+model report_execution_data {
+  id                       BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  script_step_execution_id BigInt                @db.UnsignedBigInt
+  sent                     Int                   @db.UnsignedTinyInt
+  message                  String?               @db.VarChar(2048)
+  created_at               DateTime              @default(now()) @db.DateTime(0)
+  script_step_execution    script_step_execution @relation(fields: [script_step_execution_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "report_execution_data_ibfk_1")
+
+  @@index([script_step_execution_id], map: "fk_red_script_step_execution")
+}
+
+model report_oauth {
+  id            Int      @id @default(autoincrement()) @db.UnsignedInt
+  name          String   @unique(map: "idx_integration_oauth") @db.VarChar(256)
+  client_id     String   @db.VarChar(4096)
+  client_secret String   @db.VarChar(4096)
+  url           String?  @db.VarChar(256)
+  valid_until   DateTime @default(dbgenerated("'2099-12-31 23:59:59'")) @db.DateTime(0)
+}
+
+model report_relation {
+  report_type_id Int         @db.UnsignedSmallInt
+  relation_id    BigInt      @db.UnsignedBigInt
+  report_type    report_type @relation(fields: [report_type_id], references: [id], onUpdate: Restrict, map: "report_relation_ibfk_1")
+
+  @@id([report_type_id, relation_id])
+}
+
+model report_type {
+  id                 Int                  @id @default(autoincrement()) @db.UnsignedSmallInt
+  name               String               @unique(map: "name") @db.VarChar(64)
+  report_api_keys    report_api_keys[]
+  report_relation    report_relation[]
+  script_node_report script_node_report[]
+}
+
+model robot_account {
+  id                                         Int                                          @id @default(autoincrement()) @db.UnsignedInt
+  username                                   String                                       @unique(map: "idx_username") @db.VarChar(36)
+  password                                   String                                       @db.VarChar(128)
+  role                                       robot_account_role
+  account_status_id                          Int                                          @default(1) @db.UnsignedTinyInt
+  last_active_at                             DateTime?                                    @db.DateTime(0)
+  created_at                                 DateTime?                                    @default(now()) @db.DateTime(0)
+  updated_at                                 DateTime?                                    @default(now()) @db.DateTime(0)
+  revision                                   BigInt?                                      @unique(map: "_revision") @map("_revision") @db.UnsignedBigInt
+  audio_transcription_event                  audio_transcription_event[]
+  direct_reminder                            direct_reminder[]
+  disabled_default_script_speech_interaction disabled_default_script_speech_interaction[]
+  disabled_script_speech_interaction         disabled_script_speech_interaction[]
+  event_subscription                         event_subscription[]
+  event_trigger                              event_trigger[]
+  event_trigger_setting                      event_trigger_setting[]
+  inactive_robot_account_delete_process      inactive_robot_account_delete_process[]
+  incoming_event                             incoming_event[]
+  music_collection                           music_collection[]
+  organisational_robot                       organisational_robot[]
+  pairing_pin                                pairing_pin?
+  pending_asr_feedback                       pending_asr_feedback[]
+  playlist                                   playlist[]
+  robot_account_status                       robot_account_status                         @relation(fields: [account_status_id], references: [id], onUpdate: Restrict, map: "robot_account_ibfk_1")
+  robot_anonymised_uuid                      robot_anonymised_uuid[]
+  robot_contact                              robot_contact[]
+  robot_data_permission                      robot_data_permission[]
+  robot_heartbeat                            robot_heartbeat?
+  robot_online_status                        robot_online_status?
+  robot_profile                              robot_profile?
+  robot_schema                               robot_schema[]
+  robot_settings                             robot_settings?
+  script_conversion                          script_conversion?
+  script_reference                           script_reference[]
+  script_robot                               script_robot[]
+  script_speech_interaction                  script_speech_interaction[]
+  sensara_location_polling                   sensara_location_polling[]
+  sensara_resident_robot                     sensara_resident_robot?
+  status_check                               status_check[]
+  tessa_hearable_location                    tessa_hearable_location[]
+  user_robot                                 user_robot[]
+  user_robot_invite                          user_robot_invite[]
+
+  @@index([account_status_id], map: "fk_robot_account_status")
+}
+
+model robot_account_status {
+  id            Int             @id @db.UnsignedTinyInt
+  status        String          @unique(map: "idx_account_status") @db.VarChar(64)
+  created_at    DateTime?       @default(now()) @db.DateTime(0)
+  robot_account robot_account[]
+}
+
+model robot_anonymised_uuid {
+  id               Int                @id @default(autoincrement()) @db.UnsignedInt
+  anonymised_uuid  String             @unique(map: "anonymised_uuid") @db.VarChar(64)
+  robot_id         Int?               @db.UnsignedInt
+  created_at       DateTime?          @default(now()) @db.DateTime(0)
+  robot_account    robot_account?     @relation(fields: [robot_id], references: [id], onUpdate: NoAction, map: "robot_anonymised_uuid_ibfk_1")
+  script_reference script_reference[]
+  script_robot     script_robot[]
+
+  @@index([robot_id], map: "fk_robot_id")
+}
+
+model robot_contact {
+  id                            Int                            @id @default(autoincrement()) @db.UnsignedInt
+  robot_id                      Int                            @db.UnsignedInt
+  email                         String                         @db.VarChar(255)
+  verified                      Int                            @default(0) @db.UnsignedTinyInt
+  bounce_count                  Int                            @default(0) @db.UnsignedSmallInt
+  unsubscribe_code              String                         @db.VarChar(32)
+  unsubscribed_at               DateTime?                      @db.DateTime(0)
+  created_at                    DateTime?                      @default(now()) @db.DateTime(0)
+  updated_at                    DateTime?                      @default(now()) @db.DateTime(0)
+  offline_notification_settings offline_notification_settings?
+  robot_account                 robot_account                  @relation(fields: [robot_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "robot_contact_ibfk_2")
+  robot_contact_verification    robot_contact_verification?
+
+  @@unique([robot_id, email], map: "idx_robot_contact_robot_id_email")
+}
+
+model robot_contact_verification {
+  robot_contact_id Int           @id @db.UnsignedInt
+  code             String        @db.VarChar(32)
+  created_at       DateTime?     @default(now()) @db.DateTime(0)
+  valid_until      DateTime      @db.DateTime(0)
+  robot_contact    robot_contact @relation(fields: [robot_contact_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "robot_contact_verification_ibfk_2")
+}
+
+model robot_data_permission {
+  robot_id        Int             @db.UnsignedInt
+  permission_id   Int             @db.UnsignedInt
+  created_at      DateTime        @default(now()) @db.DateTime(0)
+  robot_account   robot_account   @relation(fields: [robot_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "robot_data_permission_ibfk_1")
+  data_permission data_permission @relation(fields: [permission_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "robot_data_permission_ibfk_2")
+
+  @@id([robot_id, permission_id])
+  @@index([permission_id], map: "permission_id")
+}
+
+model robot_delete_request {
+  id             BigInt                      @id @default(autoincrement()) @db.UnsignedBigInt
+  serial         String                      @unique(map: "idx_serial") @db.VarChar(36)
+  delete_until   DateTime                    @db.DateTime(0)
+  status         robot_delete_request_status
+  tessa_owner_id Int?                        @db.UnsignedInt
+  user_id        Int?                        @db.UnsignedInt
+  updated_at     DateTime                    @default(now()) @db.DateTime(0)
+  created_at     DateTime                    @default(now()) @db.DateTime(0)
+  user_account   user_account?               @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "robot_delete_request_ibfk_2")
+
+  @@index([user_id], map: "robot_delete_request_user_id")
+}
+
+model robot_heartbeat {
+  id                    Int           @id @default(autoincrement()) @db.UnsignedSmallInt
+  robot_id              Int           @unique(map: "idx_robot_heartbeat_robot_id") @db.UnsignedInt
+  last_seen             DateTime      @db.DateTime(0)
+  version               String?       @db.VarChar(32)
+  last_saved_at         DateTime?     @db.DateTime(0)
+  beats_since_last_save Int           @default(0) @db.UnsignedInt
+  robot_account         robot_account @relation(fields: [robot_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "robot_heartbeat_ibfk_1")
+}
+
+model robot_online_status {
+  robot_id      Int           @id @db.UnsignedInt
+  status_id     Int           @default(0) @db.UnsignedTinyInt
+  updated_at    DateTime      @default(now()) @db.DateTime(0)
+  robot_account robot_account @relation(fields: [robot_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "robot_online_status_ibfk_1")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model robot_online_status_history {
+  robot_id  Int      @db.UnsignedInt
+  status_id Int      @db.UnsignedTinyInt
+  timestamp DateTime @default(now()) @db.DateTime(0)
+
+  @@index([robot_id], map: "robot_id")
+  @@index([timestamp], map: "timestamp")
+  @@ignore
+}
+
+model robot_profile {
+  robot_id      Int           @id @db.UnsignedInt
+  endUserName   String?       @db.VarChar(64)
+  created_at    DateTime?     @default(now()) @db.DateTime(0)
+  updated_at    DateTime?     @default(now()) @db.DateTime(0)
+  robot_account robot_account @relation(fields: [robot_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "robot_profile_ibfk_1")
+}
+
+model robot_schema {
+  id                Int             @id @default(autoincrement()) @db.UnsignedInt
+  title             String          @default("") @db.VarChar(128)
+  priority          Int?            @default(0) @db.TinyInt
+  robot_id          Int             @db.UnsignedInt
+  task_id           BigInt?         @db.UnsignedBigInt
+  schedule_id       BigInt          @db.UnsignedBigInt
+  updated_at        DateTime        @default(now()) @db.DateTime(0)
+  revision          BigInt?         @unique(map: "_revision") @map("_revision") @db.UnsignedBigInt
+  question_id       BigInt?         @db.UnsignedBigInt
+  music_id          BigInt?         @db.UnsignedBigInt
+  script_task_id    BigInt?         @db.UnsignedBigInt
+  script_v2_task_id BigInt?         @db.UnsignedBigInt
+  robot_account     robot_account   @relation(fields: [robot_id], references: [id], onUpdate: Restrict, map: "robot_schema_ibfk_1")
+  task_schedule     task_schedule   @relation(fields: [schedule_id], references: [id], onUpdate: Restrict, map: "robot_schema_ibfk_3")
+  text_task         text_task?      @relation(fields: [task_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "robot_schema_ibfk_4")
+  question_task     question_task?  @relation(fields: [question_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "robot_schema_ibfk_5")
+  music_task        music_task?     @relation(fields: [music_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "robot_schema_ibfk_6")
+  script_task       script_task?    @relation(fields: [script_task_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "robot_schema_ibfk_7")
+  script_v2_task    script_v2_task? @relation(fields: [script_v2_task_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "robot_schema_ibfk_8")
+
+  @@index([robot_id], map: "fk_schema_robot_account")
+  @@index([schedule_id], map: "fk_schema_schedule")
+  @@index([music_id], map: "robot_schema_music_task_fk")
+  @@index([question_id], map: "robot_schema_question_task_fk")
+  @@index([script_task_id], map: "robot_schema_script_task_fk")
+  @@index([script_v2_task_id], map: "robot_schema_script_v2_task_fk")
+  @@index([task_id], map: "robot_schema_text_task_fk")
+}
+
+model robot_settings {
+  id                                                            Int           @id @default(autoincrement()) @db.UnsignedSmallInt
+  robot_id                                                      Int           @unique(map: "idx_robot_config_robot_id") @db.UnsignedInt
+  volume                                                        Int?          @db.UnsignedInt
+  reset_volume                                                  Int           @db.UnsignedInt
+  eyes_open_at                                                  DateTime      @db.Time(0)
+  eyes_closed_at                                                DateTime      @db.Time(0)
+  listening_sound                                               Boolean       @default(false)
+  speech_speed                                                  Int           @db.UnsignedInt
+  default_language_id                                           Int           @default(1) @db.UnsignedSmallInt
+  time_zone_id                                                  Int           @default(427) @db.UnsignedSmallInt
+  speech_interactions_enabled_at                                DateTime?     @db.DateTime(0)
+  robot_updated_at                                              DateTime      @db.DateTime(0)
+  robot_received_at                                             DateTime      @db.DateTime(0)
+  user_updated_at                                               DateTime      @db.DateTime(0)
+  created_at                                                    DateTime      @default(now()) @db.DateTime(0)
+  updated_at                                                    DateTime      @default(now()) @db.DateTime(0)
+  brightness                                                    Int           @db.UnsignedSmallInt
+  auto_brightness                                               Boolean
+  day_start_at                                                  DateTime      @db.Time(0)
+  day_end_at                                                    DateTime      @db.Time(0)
+  ui_language_id                                                Int           @db.UnsignedSmallInt
+  robot_account                                                 robot_account @relation(fields: [robot_id], references: [id], onUpdate: Restrict, map: "robot_settings_ibfk_1")
+  language_tag_robot_settings_default_language_idTolanguage_tag language_tag  @relation("robot_settings_default_language_idTolanguage_tag", fields: [default_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "robot_settings_ibfk_2")
+  time_zone                                                     time_zone     @relation(fields: [time_zone_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "robot_settings_ibfk_3")
+  language_tag_robot_settings_ui_language_idTolanguage_tag      language_tag  @relation("robot_settings_ui_language_idTolanguage_tag", fields: [ui_language_id], references: [id], onUpdate: Restrict, map: "robot_settings_ibfk_4")
+
+  @@index([default_language_id], map: "fk_robot_language_id")
+  @@index([ui_language_id], map: "fk_robot_ui_language_id")
+  @@index([time_zone_id], map: "fk_time_zone_id")
+}
+
+model scheduled_script {
+  id                BigInt         @id @default(autoincrement()) @db.UnsignedBigInt
+  script_robot_id   BigInt         @db.UnsignedBigInt
+  script_version_id BigInt         @db.UnsignedBigInt
+  planned           DateTime       @db.DateTime(0)
+  schema_id         Int?           @db.UnsignedInt
+  created_at        DateTime       @default(now()) @db.DateTime(0)
+  script            script         @relation(fields: [script_version_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "scheduled_script_ibfk_3")
+  script_robot      script_robot   @relation(fields: [script_robot_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "scheduled_script_ibfk_4")
+  script_reply      script_reply[]
+
+  @@unique([script_robot_id, planned, schema_id], map: "uc_scheduled_script_script")
+  @@index([schema_id], map: "fk_scheduled_script_schedule_id")
+  @@index([script_version_id], map: "fk_scheduled_script_script_version_id")
+}
+
+model schema_version {
+  installed_rank Int      @id
+  version        String?  @db.VarChar(50)
+  description    String   @db.VarChar(200)
+  type           String   @db.VarChar(20)
+  script         String   @db.VarChar(1000)
+  checksum       Int?
+  installed_by   String   @db.VarChar(100)
+  installed_on   DateTime @default(now()) @db.Timestamp(0)
+  execution_time Int
+  success        Boolean
+
+  @@index([success], map: "schema_version_s_idx")
+}
+
+model script {
+  id                 BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  script_robot_id    BigInt             @db.UnsignedBigInt
+  command            Json
+  created_at         DateTime           @default(now()) @db.DateTime(0)
+  name               String             @db.VarChar(128)
+  type               script_type        @default(script)
+  script_category_id Int                @default(1) @db.UnsignedSmallInt
+  scheduled_script   scheduled_script[]
+  script_robot       script_robot       @relation(fields: [script_robot_id], references: [id], onUpdate: Restrict, map: "script_ibfk_1")
+  script_category    script_category    @relation(fields: [script_category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "script_ibfk_2")
+
+  @@index([script_category_id], map: "fk_script_category_id")
+  @@index([script_robot_id], map: "fk_script_version_script_id")
+}
+
+model script_category {
+  id             Int              @id @default(autoincrement()) @db.UnsignedSmallInt
+  name           String           @unique(map: "idx_script_category_name") @db.VarChar(32)
+  created_at     DateTime         @default(now()) @db.DateTime(0)
+  script         script[]
+  script_version script_version[]
+}
+
+model script_conversion {
+  robot_id      Int           @id @db.UnsignedInt
+  created_at    DateTime?     @default(now()) @db.DateTime(0)
+  robot_account robot_account @relation(fields: [robot_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "script_conversion_ibfk_1")
+}
+
+model script_execution {
+  id                    BigInt                  @id @default(autoincrement()) @db.UnsignedBigInt
+  script_reference_id   BigInt                  @db.UnsignedBigInt
+  script_version_id     BigInt                  @db.UnsignedBigInt
+  schedule_id           BigInt?                 @db.UnsignedBigInt
+  planned               DateTime?               @db.DateTime(0)
+  created_at            DateTime                @default(now()) @db.DateTime(0)
+  triggering_event_id   BigInt?                 @db.UnsignedBigInt
+  event_trigger         event_trigger?          @relation(fields: [triggering_event_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "fk_script_execution_triggering_event_id")
+  task_schedule         task_schedule?          @relation(fields: [schedule_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "script_execution_ibfk_1")
+  script_reference      script_reference        @relation(fields: [script_reference_id], references: [id], onUpdate: Restrict, map: "script_execution_ibfk_2")
+  script_version        script_version          @relation(fields: [script_version_id], references: [id], onUpdate: Restrict, map: "script_execution_ibfk_3")
+  script_step_execution script_step_execution[]
+
+  @@index([script_reference_id], map: "script_execution_script_reference_id")
+  @@index([script_version_id], map: "script_step_script_version_id")
+  @@index([triggering_event_id], map: "idx_triggering_event_id")
+  @@index([schedule_id], map: "script_execution_ibfk_1")
+}
+
+model script_next_closed_question {
+  id                                                                  BigInt                             @id @default(autoincrement()) @db.UnsignedBigInt
+  script_step_id                                                      BigInt                             @db.UnsignedBigInt
+  next_step_id                                                        BigInt?                            @db.UnsignedBigInt
+  answer                                                              script_next_closed_question_answer
+  created_at                                                          DateTime                           @default(now()) @db.DateTime(0)
+  script_step_script_next_closed_question_script_step_idToscript_step script_step                        @relation("script_next_closed_question_script_step_idToscript_step", fields: [script_step_id], references: [id], onUpdate: Restrict, map: "script_next_closed_question_ibfk_1")
+  script_step_script_next_closed_question_next_step_idToscript_step   script_step?                       @relation("script_next_closed_question_next_step_idToscript_step", fields: [next_step_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "script_next_closed_question_ibfk_2")
+
+  @@index([next_step_id], map: "script_next_next_step_id")
+  @@index([script_step_id], map: "script_next_script_step_id")
+}
+
+model script_next_goto {
+  id                                                       BigInt       @id @default(autoincrement()) @db.UnsignedBigInt
+  script_step_id                                           BigInt       @db.UnsignedBigInt
+  max_reached                                              Boolean
+  next_step_id                                             BigInt?      @db.UnsignedBigInt
+  created_at                                               DateTime     @default(now()) @db.DateTime(0)
+  script_step_script_next_goto_script_step_idToscript_step script_step  @relation("script_next_goto_script_step_idToscript_step", fields: [script_step_id], references: [id], onUpdate: Restrict, map: "script_next_goto_ibfk_1")
+  script_step_script_next_goto_next_step_idToscript_step   script_step? @relation("script_next_goto_next_step_idToscript_step", fields: [next_step_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "script_next_goto_ibfk_2")
+
+  @@index([next_step_id], map: "script_next_goto_next_step_id")
+  @@index([script_step_id], map: "script_next_goto_step_id")
+}
+
+model script_next_multiple_choice {
+  id                                                                  BigInt                                     @id @default(autoincrement()) @db.UnsignedBigInt
+  intention_type                                                      script_next_multiple_choice_intention_type
+  script_step_id                                                      BigInt                                     @db.UnsignedBigInt
+  next_step_id                                                        BigInt?                                    @db.UnsignedBigInt
+  primary_command                                                     String?                                    @db.VarChar(128)
+  created_at                                                          DateTime                                   @default(now()) @db.DateTime(0)
+  script_step_script_next_multiple_choice_script_step_idToscript_step script_step                                @relation("script_next_multiple_choice_script_step_idToscript_step", fields: [script_step_id], references: [id], onUpdate: Restrict, map: "script_next_multiple_choice_ibfk_1")
+  script_step_script_next_multiple_choice_next_step_idToscript_step   script_step?                               @relation("script_next_multiple_choice_next_step_idToscript_step", fields: [next_step_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "script_next_multiple_choice_ibfk_2")
+  script_next_multiple_choice_command                                 script_next_multiple_choice_command[]
+
+  @@index([next_step_id], map: "script_next_next_step_id")
+  @@index([script_step_id], map: "script_next_script_step_id")
+}
+
+model script_next_multiple_choice_command {
+  id                             BigInt                      @id @default(autoincrement()) @db.UnsignedBigInt
+  script_next_multiple_choice_id BigInt                      @db.UnsignedBigInt
+  command                        String                      @db.VarChar(128)
+  created_at                     DateTime                    @default(now()) @db.DateTime(0)
+  script_next_multiple_choice    script_next_multiple_choice @relation(fields: [script_next_multiple_choice_id], references: [id], onUpdate: Restrict, map: "script_next_multiple_choice_command_ibfk_1")
+
+  @@index([script_next_multiple_choice_id], map: "snmcad_script_next_multiple_choice_id")
+}
+
+model script_next_then {
+  id                                                       BigInt       @id @default(autoincrement()) @db.UnsignedBigInt
+  script_step_id                                           BigInt       @db.UnsignedBigInt
+  next_step_id                                             BigInt?      @db.UnsignedBigInt
+  created_at                                               DateTime     @default(now()) @db.DateTime(0)
+  script_step_script_next_then_script_step_idToscript_step script_step  @relation("script_next_then_script_step_idToscript_step", fields: [script_step_id], references: [id], onUpdate: Restrict, map: "script_next_then_ibfk_1")
+  script_step_script_next_then_next_step_idToscript_step   script_step? @relation("script_next_then_next_step_idToscript_step", fields: [next_step_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "script_next_then_ibfk_2")
+
+  @@index([next_step_id], map: "script_next_next_step_id")
+  @@index([script_step_id], map: "script_next_script_step_id")
+}
+
+model script_node_goto {
+  id             BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  script_step_id BigInt      @db.UnsignedBigInt
+  max_passes     Int         @db.UnsignedSmallInt
+  created_at     DateTime    @default(now()) @db.DateTime(0)
+  script_step    script_step @relation(fields: [script_step_id], references: [id], onUpdate: Restrict, map: "script_node_goto_ibfk_1")
+
+  @@index([script_step_id], map: "script_node_goto_step_id")
+}
+
+model script_node_report {
+  id                            BigInt                          @id @default(autoincrement()) @db.UnsignedBigInt
+  script_step_id                BigInt                          @db.UnsignedBigInt
+  report_type_id                Int                             @db.UnsignedSmallInt
+  created_at                    DateTime                        @default(now()) @db.DateTime(0)
+  script_step                   script_step                     @relation(fields: [script_step_id], references: [id], onUpdate: Restrict, map: "script_node_report_ibfk_1")
+  report_type                   report_type                     @relation(fields: [report_type_id], references: [id], onUpdate: Restrict, map: "script_node_report_ibfk_2")
+  script_node_report_form_field script_node_report_form_field[]
+
+  @@index([script_step_id], map: "script_node_report_step_id")
+  @@index([report_type_id], map: "script_node_report_type_id")
+}
+
+model script_node_report_form_field {
+  id                    BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  script_node_report_id BigInt             @db.UnsignedBigInt
+  key                   String             @db.VarChar(64)
+  value                 String?            @db.VarChar(2048)
+  script_node_report    script_node_report @relation(fields: [script_node_report_id], references: [id], onUpdate: Restrict, map: "script_node_report_form_field_ibfk_1")
+
+  @@unique([script_node_report_id, key], map: "unique_report_key")
+}
+
+model script_node_status_check {
+  id                          BigInt                   @id @default(autoincrement()) @db.UnsignedBigInt
+  script_step_id              BigInt                   @db.UnsignedBigInt
+  status_check_description_id Int                      @db.UnsignedInt
+  past_interval               Int                      @default(0)
+  future_interval             Int                      @default(0)
+  created_at                  DateTime                 @default(now()) @db.DateTime(0)
+  script_step                 script_step              @relation(fields: [script_step_id], references: [id], onUpdate: Restrict, map: "script_node_status_check_ibfk_1")
+  status_check_description    status_check_description @relation(fields: [status_check_description_id], references: [id], onUpdate: Restrict, map: "script_node_status_check_ibfk_2")
+
+  @@index([script_step_id], map: "script_node_status_check_step_id")
+  @@index([status_check_description_id], map: "script_node_status_status_status_check_description_id")
+}
+
+model script_node_tts {
+  id             BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  script_step_id BigInt      @db.UnsignedBigInt
+  text           String      @db.VarChar(2048)
+  notify         Boolean     @default(false)
+  greet          Boolean     @default(false)
+  say_time       Boolean     @default(false)
+  created_at     DateTime    @default(now()) @db.DateTime(0)
+  script_step    script_step @relation(fields: [script_step_id], references: [id], onUpdate: Restrict, map: "script_node_tts_ibfk_1")
+
+  @@index([script_step_id], map: "script_node_tts_script_step_id")
+}
+
+model script_node_wait {
+  id             BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  script_step_id BigInt      @db.UnsignedBigInt
+  seconds        Int         @db.UnsignedSmallInt
+  created_at     DateTime    @default(now()) @db.DateTime(0)
+  script_step    script_step @relation(fields: [script_step_id], references: [id], onUpdate: Restrict, map: "script_node_wait_ibfk_1")
+
+  @@index([script_step_id], map: "script_node_wait_script_step_id")
+}
+
+model script_reference {
+  id                                BigInt                              @id @default(autoincrement()) @db.UnsignedBigInt
+  template_id                       BigInt?                             @db.UnsignedBigInt
+  robot_id                          Int?                                @db.UnsignedInt
+  robot_anonymised_uuid_id          Int?                                @db.UnsignedInt
+  created_at                        DateTime                            @default(now()) @db.DateTime(0)
+  archived_at                       DateTime?                           @db.DateTime(0)
+  archive_id                        Int?                                @db.UnsignedInt
+  default_script_speech_interaction default_script_speech_interaction[]
+  event_trigger                     event_trigger[]
+  event_trigger_setting             event_trigger_setting[]
+  script_execution                  script_execution[]
+  robot_account                     robot_account?                      @relation(fields: [robot_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "script_reference_ibfk_2")
+  robot_anonymised_uuid             robot_anonymised_uuid?              @relation(fields: [robot_anonymised_uuid_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "script_reference_ibfk_3")
+  script_speech_interaction         script_speech_interaction[]
+  script_v2_task                    script_v2_task[]
+  script_version                    script_version[]
+
+  @@index([robot_anonymised_uuid_id], map: "fk_robot_anonymised_uuid_id")
+  @@index([robot_id], map: "script_reference_robot_id")
+}
+
+model script_reply {
+  id                  BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  scheduled_script_id BigInt           @db.UnsignedBigInt
+  node_id             String           @db.VarChar(128)
+  execution_time      DateTime         @db.DateTime(0)
+  answer              String?          @db.VarChar(16)
+  created_at          DateTime         @default(now()) @db.DateTime(0)
+  scheduled_script    scheduled_script @relation(fields: [scheduled_script_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "script_reply_ibfk_1")
+
+  @@unique([scheduled_script_id, node_id], map: "uc_script_reply_reply")
+}
+
+model script_robot {
+  id                       BigInt                 @id @default(autoincrement()) @db.UnsignedBigInt
+  robot_id                 Int?                   @db.UnsignedInt
+  robot_anonymised_uuid_id Int?                   @db.UnsignedInt
+  template_id              BigInt?                @db.UnsignedBigInt
+  created_at               DateTime               @db.DateTime(0)
+  updated_at               DateTime               @default(now()) @db.DateTime(0)
+  deleted                  Boolean?
+  scheduled_script         scheduled_script[]
+  script                   script[]
+  robot_account            robot_account?         @relation(fields: [robot_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "script_robot_ibfk_1")
+  script_templates         script_templates?      @relation(fields: [template_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "script_robot_ibfk_2")
+  robot_anonymised_uuid    robot_anonymised_uuid? @relation(fields: [robot_anonymised_uuid_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "script_robot_ibfk_3")
+  script_task              script_task[]
+
+  @@index([robot_anonymised_uuid_id], map: "fk_robot_anonymised_uuid_id")
+  @@index([robot_id], map: "fk_script_robot")
+  @@index([template_id], map: "scripts_template_id_fk")
+}
+
+model script_speech_interaction {
+  id                                 BigInt                               @id @default(autoincrement()) @db.UnsignedBigInt
+  title                              String                               @db.VarChar(128)
+  script_reference_id                BigInt                               @db.UnsignedBigInt
+  robot_id                           Int?                                 @db.UnsignedInt
+  created_at                         DateTime?                            @default(now()) @db.DateTime(0)
+  updated_at                         DateTime?                            @default(now()) @db.DateTime(0)
+  default_script_speech_interaction  default_script_speech_interaction[]
+  disabled_script_speech_interaction disabled_script_speech_interaction[]
+  robot_account                      robot_account?                       @relation(fields: [robot_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_script_speech_interaction_robot_id")
+  script_reference                   script_reference                     @relation(fields: [script_reference_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "script_speech_interaction_ibfk_1")
+  script_speech_interaction_command  script_speech_interaction_command[]
+
+  @@unique([robot_id, title], map: "idx_robot_title")
+  @@index([script_reference_id], map: "fk_script_reference_id")
+}
+
+model script_speech_interaction_command {
+  id                        BigInt                    @id @default(autoincrement()) @db.UnsignedBigInt
+  speech_interaction_id     BigInt                    @db.UnsignedBigInt
+  command                   String                    @db.VarChar(128)
+  created_at                DateTime?                 @default(now()) @db.DateTime(0)
+  script_speech_interaction script_speech_interaction @relation(fields: [speech_interaction_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "script_speech_interaction_command_ibfk_1")
+
+  @@index([speech_interaction_id], map: "fk_speech_interaction_id")
+}
+
+model script_step {
+  id                                                                                  BigInt                        @id @default(autoincrement()) @db.UnsignedBigInt
+  step_type_id                                                                        Int                           @db.UnsignedSmallInt
+  script_version_id                                                                   BigInt                        @db.UnsignedBigInt
+  created_at                                                                          DateTime                      @default(now()) @db.DateTime(0)
+  first                                                                               Boolean                       @default(false)
+  script_next_closed_question_script_next_closed_question_script_step_idToscript_step script_next_closed_question[] @relation("script_next_closed_question_script_step_idToscript_step")
+  script_next_closed_question_script_next_closed_question_next_step_idToscript_step   script_next_closed_question[] @relation("script_next_closed_question_next_step_idToscript_step")
+  script_next_goto_script_next_goto_script_step_idToscript_step                       script_next_goto[]            @relation("script_next_goto_script_step_idToscript_step")
+  script_next_goto_script_next_goto_next_step_idToscript_step                         script_next_goto[]            @relation("script_next_goto_next_step_idToscript_step")
+  script_next_multiple_choice_script_next_multiple_choice_script_step_idToscript_step script_next_multiple_choice[] @relation("script_next_multiple_choice_script_step_idToscript_step")
+  script_next_multiple_choice_script_next_multiple_choice_next_step_idToscript_step   script_next_multiple_choice[] @relation("script_next_multiple_choice_next_step_idToscript_step")
+  script_next_then_script_next_then_script_step_idToscript_step                       script_next_then[]            @relation("script_next_then_script_step_idToscript_step")
+  script_next_then_script_next_then_next_step_idToscript_step                         script_next_then[]            @relation("script_next_then_next_step_idToscript_step")
+  script_node_goto                                                                    script_node_goto[]
+  script_node_report                                                                  script_node_report[]
+  script_node_status_check                                                            script_node_status_check[]
+  script_node_tts                                                                     script_node_tts[]
+  script_node_wait                                                                    script_node_wait[]
+  step_type                                                                           step_type                     @relation(fields: [step_type_id], references: [id], onUpdate: Restrict, map: "script_step_ibfk_1")
+  script_version                                                                      script_version                @relation(fields: [script_version_id], references: [id], onUpdate: Restrict, map: "script_step_ibfk_2")
+  script_step_execution_script_step_execution_script_step_idToscript_step             script_step_execution[]       @relation("script_step_execution_script_step_idToscript_step")
+  script_step_execution_script_step_execution_next_script_step_idToscript_step        script_step_execution[]       @relation("script_step_execution_next_script_step_idToscript_step")
+  status_check_status_check_next_step_idToscript_step                                 status_check[]                @relation("status_check_next_step_idToscript_step")
+  status_check_status_check_step_idToscript_step                                      status_check[]                @relation("status_check_step_idToscript_step")
+
+  @@index([script_version_id], map: "script_step_script_version_id")
+  @@index([step_type_id], map: "script_step_step_type")
+}
+
+model script_step_execution {
+  id                                                                 BigInt                           @id @default(autoincrement()) @db.UnsignedBigInt
+  script_execution_id                                                BigInt                           @db.UnsignedBigInt
+  script_step_id                                                     BigInt                           @db.UnsignedBigInt
+  next_script_step_id                                                BigInt?                          @db.UnsignedBigInt
+  executed_at                                                        DateTime
+  created_at                                                         DateTime                         @default(now()) @db.DateTime(0)
+  closed_question_execution_data                                     closed_question_execution_data[]
+  multiple_choice_execution_data                                     multiple_choice_execution_data[]
+  report_execution_data                                              report_execution_data[]
+  script_execution                                                   script_execution                 @relation(fields: [script_execution_id], references: [id], onUpdate: Restrict, map: "script_step_execution_ibfk_1")
+  script_step_script_step_execution_script_step_idToscript_step      script_step                      @relation("script_step_execution_script_step_idToscript_step", fields: [script_step_id], references: [id], onUpdate: Restrict, map: "script_step_execution_ibfk_2")
+  script_step_script_step_execution_next_script_step_idToscript_step script_step?                     @relation("script_step_execution_next_script_step_idToscript_step", fields: [next_script_step_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "script_step_execution_ibfk_3")
+
+  @@index([script_execution_id], map: "script_step_execution_script_execution_id")
+  @@index([next_script_step_id], map: "script_step_execution_script_next_step_id")
+  @@index([script_step_id], map: "script_step_execution_script_step_id")
+}
+
+model script_task {
+  id               BigInt         @id @default(autoincrement()) @db.UnsignedBigInt
+  task_category_id Int            @db.UnsignedSmallInt
+  script_robot_id  BigInt         @db.UnsignedBigInt
+  created_at       DateTime       @default(now()) @db.DateTime(0)
+  robot_schema     robot_schema[]
+  task_category    task_category  @relation(fields: [task_category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "script_task_ibfk_1")
+  script_robot     script_robot   @relation(fields: [script_robot_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "script_task_ibfk_3")
+
+  @@index([script_robot_id], map: "fk_script_task_script_robot_id")
+  @@index([task_category_id], map: "fk_script_task_task_category")
+}
+
+model script_template_variables {
+  id               BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  template_id      BigInt           @db.UnsignedBigInt
+  name             String           @db.VarChar(128)
+  description      String?          @db.VarChar(256)
+  example          String           @db.VarChar(256)
+  default_value    String?          @db.VarChar(256)
+  type             String           @db.VarChar(16)
+  created_at       DateTime         @default(now()) @db.DateTime(0)
+  script_templates script_templates @relation(fields: [template_id], references: [id], onUpdate: Restrict, map: "script_template_variables_ibfk_1")
+
+  @@index([template_id], map: "fk_script_template_variables_template_id")
+}
+
+model script_templates {
+  id                        BigInt                      @id @default(autoincrement()) @db.UnsignedBigInt
+  name                      String                      @db.VarChar(128)
+  description               String                      @db.VarChar(256)
+  language                  String                      @db.VarChar(16)
+  command                   Json
+  deleted                   Boolean                     @default(false)
+  created_at                DateTime                    @db.DateTime(0)
+  updated_at                DateTime                    @default(now()) @db.DateTime(0)
+  script_robot              script_robot[]
+  script_template_variables script_template_variables[]
+}
+
+model script_v2_task {
+  id                  BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  task_category_id    Int              @db.UnsignedSmallInt
+  script_reference_id BigInt           @db.UnsignedBigInt
+  created_at          DateTime         @default(now()) @db.DateTime(0)
+  robot_schema        robot_schema[]
+  task_category       task_category    @relation(fields: [task_category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "script_v2_task_ibfk_1")
+  script_reference    script_reference @relation(fields: [script_reference_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "script_v2_task_ibfk_2")
+
+  @@index([script_reference_id], map: "fk_script_v2_task_script_reference_id")
+  @@index([task_category_id], map: "fk_script_v2_task_task_category")
+}
+
+model script_version {
+  id                  BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  script_reference_id BigInt             @db.UnsignedBigInt
+  capability_version  Int                @default(1) @db.UnsignedSmallInt
+  script_category_id  Int                @default(1) @db.UnsignedSmallInt
+  script_name         String             @db.VarChar(128)
+  language_tag_id     Int                @default(1) @db.UnsignedSmallInt
+  duration            Int
+  created_at          DateTime           @default(now()) @db.DateTime(0)
+  script_execution    script_execution[]
+  script_step         script_step[]
+  script_category     script_category    @relation(fields: [script_category_id], references: [id], onUpdate: Restrict, map: "script_version_ibfk_1")
+  script_reference    script_reference   @relation(fields: [script_reference_id], references: [id], onUpdate: Restrict, map: "script_version_ibfk_2")
+  language_tag        language_tag       @relation(fields: [language_tag_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "script_version_ibfk_3")
+  status_check        status_check[]
+
+  @@index([language_tag_id], map: "fk_language_tag_id")
+  @@index([script_category_id], map: "fk_script_category")
+  @@index([script_reference_id], map: "script_version_script_reference_id")
+}
+
+model sensara_event {
+  id                      BigInt                 @id @default(autoincrement()) @db.UnsignedBigInt
+  sensara_id              String?                @db.VarChar(256)
+  resident_robot_id       Int                    @db.UnsignedInt
+  sensara_event_schema_id Int                    @db.UnsignedInt
+  created_at              DateTime               @default(now()) @db.DateTime(0)
+  sensara_resident_robot  sensara_resident_robot @relation(fields: [resident_robot_id], references: [id], onUpdate: Restrict, map: "sensara_event_ibfk_1")
+  sensara_event_schema    sensara_event_schema   @relation(fields: [sensara_event_schema_id], references: [id], onUpdate: Restrict, map: "sensara_event_ibfk_2")
+
+  @@index([resident_robot_id], map: "sensara_event_resident_robot_id")
+  @@index([sensara_event_schema_id], map: "sensara_event_sensara_event_schema_id")
+  @@index([sensara_id], map: "sensara_id")
+}
+
+model sensara_event_schema {
+  id            Int             @id @default(autoincrement()) @db.UnsignedInt
+  name          String          @unique(map: "sensara_event_schema_name") @db.VarChar(128)
+  type          String          @db.VarChar(128)
+  created_at    DateTime        @default(now()) @db.DateTime(0)
+  sensara_event sensara_event[]
+}
+
+model sensara_location_polling {
+  id             Int                            @id @default(autoincrement()) @db.UnsignedInt
+  robot_id       Int                            @db.UnsignedInt
+  type           sensara_location_polling_type?
+  location_label String?                        @db.VarChar(256)
+  until          DateTime                       @db.DateTime(0)
+  created_at     DateTime                       @default(now()) @db.DateTime(0)
+  updated_at     DateTime                       @default(now()) @db.DateTime(0)
+  robot_account  robot_account                  @relation(fields: [robot_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sensara_location_polling_robot_id")
+
+  @@index([robot_id], map: "fk_sensara_location_polling_robot_id")
+}
+
+model sensara_resident_robot {
+  id            Int             @id @default(autoincrement()) @db.UnsignedInt
+  resident_id   String          @unique(map: "sensara_resident_resident_id") @db.VarChar(256)
+  robot_id      Int?            @unique(map: "sensara_resident_robot_id") @db.UnsignedInt
+  is_active     Boolean?        @default(true)
+  created_at    DateTime        @default(now()) @db.DateTime(0)
+  updated_at    DateTime        @default(now()) @db.DateTime(0)
+  sensara_event sensara_event[]
+  robot_account robot_account?  @relation(fields: [robot_id], references: [id], onUpdate: NoAction, map: "fk_sensara_resident_robot_id")
+}
+
+model status_check {
+  id                                                 BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  robot_id                                           Int                   @db.UnsignedInt
+  status_check_template_id                           Int                   @db.UnsignedInt
+  phase                                              String                @db.VarChar(64)
+  subscription_id                                    BigInt?               @db.UnsignedBigInt
+  result                                             String?               @db.VarChar(64)
+  step_id                                            BigInt                @db.UnsignedBigInt
+  next_step_id                                       BigInt?               @db.UnsignedBigInt
+  script_version_id                                  BigInt                @db.UnsignedBigInt
+  scheduled_id                                       BigInt                @db.UnsignedBigInt
+  planned_at                                         DateTime              @db.Timestamp(0)
+  created_at                                         DateTime?             @default(now()) @db.Timestamp(0)
+  updated_at                                         DateTime?             @default(now()) @db.Timestamp(0)
+  script_step_status_check_next_step_idToscript_step script_step?          @relation("status_check_next_step_idToscript_step", fields: [next_step_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_status_check_next_step_id")
+  robot_account                                      robot_account         @relation(fields: [robot_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_status_check_robot_id")
+  script_version                                     script_version        @relation(fields: [script_version_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_status_check_script_version_id")
+  script_step_status_check_step_idToscript_step      script_step           @relation("status_check_step_idToscript_step", fields: [step_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_status_check_step_id")
+  event_subscription                                 event_subscription?   @relation(fields: [subscription_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_status_check_subscription_id")
+  status_check_template                              status_check_template @relation(fields: [status_check_template_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_status_check_template_id")
+  status_check_poller                                status_check_poller?
+  status_check_record                                status_check_record[]
+
+  @@index([next_step_id], map: "fk_status_check_next_step_id")
+  @@index([script_version_id], map: "fk_status_check_script_version_id")
+  @@index([step_id], map: "fk_status_check_step_id")
+  @@index([subscription_id], map: "fk_status_check_subscription_id")
+  @@index([status_check_template_id], map: "fk_status_check_template_id")
+  @@index([robot_id, status_check_template_id, result], map: "idx_status_check_result_template_robot_id")
+}
+
+model status_check_description {
+  id                       Int                        @id @default(autoincrement()) @db.UnsignedInt
+  name                     String                     @unique(map: "status_check_description_name") @db.VarChar(256)
+  description              String                     @db.VarChar(1024)
+  created_at               DateTime                   @default(now()) @db.DateTime(0)
+  script_node_status_check script_node_status_check[]
+  status_check_template    status_check_template[]
+
+  @@index([name], map: "idx_status_check_template_name_version_desc")
+}
+
+model status_check_poller {
+  status_check_id BigInt       @id @db.UnsignedBigInt
+  since           DateTime?    @db.Timestamp(0)
+  until           DateTime?    @db.Timestamp(0)
+  lock_id         String?      @db.VarChar(256)
+  created_at      DateTime?    @default(now()) @db.Timestamp(0)
+  updated_at      DateTime?    @default(now()) @db.Timestamp(0)
+  status_check    status_check @relation(fields: [status_check_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "status_check_poller_ibfk_1")
+
+  @@index([lock_id], map: "idx_status_check_poller_lock_id")
+  @@index([until], map: "idx_status_check_poller_until")
+  @@index([updated_at], map: "idx_status_check_poller_updated_at")
+}
+
+model status_check_record {
+  id                BigInt          @default(autoincrement()) @db.UnsignedBigInt
+  status_check_id   BigInt          @db.UnsignedBigInt
+  incoming_event_id BigInt?         @db.UnsignedBigInt
+  outgoing_event_id BigInt?         @db.UnsignedBigInt
+  event_name        String          @db.VarChar(256)
+  order             Int             @db.UnsignedInt
+  phase             String          @db.VarChar(64)
+  result            String          @db.VarChar(64)
+  created_at        DateTime?       @default(now()) @db.Timestamp(0)
+  status_check      status_check    @relation(fields: [status_check_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_status_check_record_check_id")
+  incoming_event    incoming_event? @relation(fields: [incoming_event_id], references: [id], onUpdate: NoAction, map: "fk_status_check_record_incoming_event_id")
+  outgoing_event    outgoing_event? @relation(fields: [outgoing_event_id], references: [id], onUpdate: NoAction, map: "fk_status_check_record_outgoing_event_id")
+
+  @@id([id, phase])
+  @@index([status_check_id], map: "fk_status_check_record_check_id")
+  @@index([incoming_event_id], map: "fk_status_check_record_incoming_event_id")
+  @@index([outgoing_event_id], map: "fk_status_check_record_outgoing_event_id")
+}
+
+model status_check_template {
+  id                           Int                            @id @default(autoincrement()) @db.UnsignedInt
+  template_description_id      Int                            @db.UnsignedInt
+  past_event_dependencies      String                         @db.VarChar(512)
+  future_event_dependencies    String                         @db.VarChar(512)
+  version                      Int                            @default(1) @db.UnsignedSmallInt
+  is_active                    Boolean                        @default(true)
+  poll_until_end               Boolean                        @default(false)
+  created_at                   DateTime                       @default(now()) @db.DateTime(0)
+  status_check                 status_check[]
+  status_check_description     status_check_description       @relation(fields: [template_description_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "status_check_template_ibfk_1")
+  status_check_template_detail status_check_template_detail[]
+
+  @@unique([template_description_id, version], map: "status_check_template_name_version")
+  @@index([template_description_id, version(sort: Desc)], map: "idx_status_check_template_name_version_desc")
+}
+
+model status_check_template_detail {
+  template_id           Int                   @db.UnsignedInt
+  phase                 String                @db.VarChar(64)
+  raw_expression        String                @db.VarChar(1024)
+  output                String                @db.VarChar(16)
+  status_check_template status_check_template @relation(fields: [template_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "status_check_template_detail_ibfk_1")
+
+  @@unique([template_id, phase, output], map: "status_check_template_unique_phase_output")
+}
+
+model step_type {
+  id          Int           @id @default(autoincrement()) @db.UnsignedSmallInt
+  name        String        @db.VarChar(64)
+  script_step script_step[]
+}
+
+model task_category {
+  id              Int               @id @default(autoincrement()) @db.UnsignedSmallInt
+  name            String            @unique(map: "idx_task_category_name") @db.VarChar(32)
+  created_at      DateTime          @default(now()) @db.DateTime(0)
+  direct_reminder direct_reminder[]
+  music_task      music_task[]
+  question_task   question_task[]
+  script_task     script_task[]
+  script_v2_task  script_v2_task[]
+  text_task       text_task[]
+}
+
+model task_schedule {
+  id                  BigInt                        @id @default(autoincrement()) @db.UnsignedBigInt
+  minute              String?                       @db.VarChar(64)
+  hour                String?                       @db.VarChar(64)
+  day_of_month        String?                       @db.VarChar(64)
+  month               String?                       @db.VarChar(64)
+  day_of_week         String?                       @db.VarChar(32)
+  day_of_week_index   String?                       @db.VarChar(64)
+  time_zone_id        Int                           @default(427) @db.UnsignedSmallInt
+  duration            Int                           @db.UnsignedSmallInt
+  occurences          Int?                          @default(1) @db.UnsignedTinyInt
+  interval            Int?                          @default(10) @db.UnsignedTinyInt
+  recurrence_interval Int?                          @db.UnsignedInt
+  recurrence_type     task_schedule_recurrence_type @default(CRON)
+  start_at            DateTime?                     @db.DateTime(0)
+  end_at              DateTime?                     @db.DateTime(0)
+  created_at          DateTime                      @default(now()) @db.DateTime(0)
+  robot_schema        robot_schema[]
+  script_execution    script_execution[]
+  time_zone           time_zone                     @relation(fields: [time_zone_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "task_schedule_ibfk_1")
+
+  @@index([time_zone_id], map: "fk_time_zone_id")
+  @@index([end_at], map: "idx_end_at")
+  @@index([start_at], map: "idx_start_at")
+}
+
+model tessa_hearable_location {
+  id            Int           @id @default(autoincrement()) @db.UnsignedInt
+  robot_id      Int           @db.UnsignedInt
+  location      String        @db.VarChar(256)
+  created_at    DateTime      @default(now()) @db.DateTime(0)
+  updated_at    DateTime      @default(now()) @db.DateTime(0)
+  robot_account robot_account @relation(fields: [robot_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_tessa_hearable_location_robot_id")
+
+  @@unique([robot_id, location], map: "tessa_hearable_location_robot_location")
+}
+
+model text_task {
+  id               BigInt         @id @default(autoincrement()) @db.UnsignedBigInt
+  task_category_id Int            @db.UnsignedSmallInt
+  greeting         String?        @db.VarChar(64)
+  salutation       String?        @db.VarChar(128)
+  call_to_action   String?        @db.VarChar(256)
+  pronounce_time   Boolean        @db.Bit(1)
+  occurrences      Int?           @default(0) @db.UnsignedTinyInt
+  interval         Int?           @default(0) @db.UnsignedTinyInt
+  created_at       DateTime       @default(now()) @db.DateTime(0)
+  robot_schema     robot_schema[]
+  task_category    task_category  @relation(fields: [task_category_id], references: [id], onUpdate: Restrict, map: "text_task_ibfk_1")
+
+  @@index([task_category_id], map: "fk_text_task_task_category")
+}
+
+model time_zone {
+  id             Int              @id @default(autoincrement()) @db.UnsignedSmallInt
+  name           String           @db.VarChar(64)
+  robot_settings robot_settings[]
+  task_schedule  task_schedule[]
+}
+
+model user_account {
+  id                                   Int                                    @id @default(autoincrement()) @db.UnsignedInt
+  email                                String                                 @unique(map: "idx_username") @db.VarChar(254)
+  password                             String?                                @db.VarChar(128)
+  account_status_id                    Int?                                   @default(2) @db.UnsignedTinyInt
+  last_active_at                       DateTime?                              @db.DateTime(0)
+  created_at                           DateTime?                              @default(now()) @db.DateTime(0)
+  updated_at                           DateTime?                              @default(now()) @db.DateTime(0)
+  revision                             BigInt?                                @unique(map: "_revision") @map("_revision") @db.UnsignedBigInt
+  totp_secret                          String?                                @db.VarChar(32)
+  mfa_enabled_at                       DateTime?                              @db.DateTime(0)
+  eula_version_id                      Int                                    @default(1) @db.UnsignedSmallInt
+  eula_accepted_at                     DateTime                               @default(now()) @db.DateTime(0)
+  account_activation                   account_activation[]
+  bounced_user_account                 bounced_user_account[]
+  email_change_verification            email_change_verification[]
+  external_account                     external_account[]
+  inactive_user_account_delete_process inactive_user_account_delete_process[]
+  robot_delete_request                 robot_delete_request[]
+  user_account_status                  user_account_status?                   @relation(fields: [account_status_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "user_account_ibfk_1")
+  eula_config                          eula_config                            @relation(fields: [eula_version_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_account_ibfk_2")
+  user_notification                    user_notification[]                    @ignore
+  user_password_reset                  user_password_reset?
+  user_profile                         user_profile?
+  user_robot                           user_robot[]
+
+  @@index([eula_version_id], map: "fk_user_account_eula_version_id")
+  @@index([account_status_id], map: "user_account_status_fk")
+}
+
+model user_account_status {
+  id           Int            @id @db.UnsignedTinyInt
+  status       String         @unique(map: "idx_account_status") @db.VarChar(64)
+  created_at   DateTime?      @default(now()) @db.DateTime(0)
+  user_account user_account[]
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model user_notification {
+  notification_id Int          @db.UnsignedInt
+  user_id         Int          @db.UnsignedInt
+  seen_at         DateTime?    @db.DateTime(0)
+  created_at      DateTime?    @default(now()) @db.DateTime(0)
+  notification    notification @relation(fields: [notification_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_notification_notification_id")
+  user_account    user_account @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_user_notification_user_id")
+
+  @@index([notification_id], map: "fk_user_notification_notification_id")
+  @@index([user_id], map: "fk_user_notification_user_id")
+  @@ignore
+}
+
+model user_password_reset {
+  user_id      Int          @id @db.UnsignedInt
+  reset_key    String       @unique(map: "reset_key") @db.Char(32)
+  created_at   DateTime     @default(now()) @db.DateTime(0)
+  user_account user_account @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "user_password_reset_ibfk_1")
+}
+
+model user_profile {
+  user_id      Int          @id @db.UnsignedInt
+  first_name   String       @db.VarChar(128)
+  last_name    String       @db.VarChar(256)
+  phone_number BigInt?
+  created_at   DateTime     @default(now()) @db.DateTime(0)
+  updated_at   DateTime     @default(now()) @db.DateTime(0)
+  revision     BigInt?      @unique(map: "_revision") @map("_revision") @db.UnsignedBigInt
+  user_account user_account @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "user_profile_ibfk_1")
+}
+
+model user_robot {
+  id                      Int                  @id @default(autoincrement()) @db.UnsignedInt
+  robot_id                Int                  @db.UnsignedInt
+  user_id                 Int                  @db.UnsignedInt
+  role_id                 Int                  @db.UnsignedTinyInt
+  robot_alias             String?              @db.VarChar(26)
+  created_at              DateTime             @default(now()) @db.DateTime(0)
+  deleted_at              DateTime?            @db.DateTime(0)
+  client_relation_role_id Int                  @default(4) @db.UnsignedTinyInt
+  robot_account           robot_account        @relation(fields: [robot_id], references: [id], onUpdate: Restrict, map: "user_robot_ibfk_1")
+  user_account            user_account         @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "user_robot_ibfk_2")
+  user_robot_role         user_robot_role      @relation(fields: [role_id], references: [id], onUpdate: Restrict, map: "user_robot_ibfk_3")
+  client_relation_role    client_relation_role @relation(fields: [client_relation_role_id], references: [id], onUpdate: Restrict, map: "user_robot_ibfk_4")
+
+  @@unique([user_id, robot_id], map: "unique_user_robot")
+  @@index([robot_id], map: "fk_user_robot_robot_account")
+  @@index([role_id], map: "fk_user_robot_role")
+  @@index([client_relation_role_id], map: "user_robot_invite_client_relation_role_id")
+}
+
+model user_robot_invite {
+  id                      Int                  @id @default(autoincrement()) @db.UnsignedInt
+  robot_id                Int                  @db.UnsignedInt
+  email                   String               @db.VarChar(254)
+  client_relation_role_id Int                  @db.UnsignedTinyInt
+  invite_code             String               @db.VarChar(32)
+  valid_until             DateTime             @db.DateTime(0)
+  updated_at              DateTime             @default(now()) @db.DateTime(0)
+  created_at              DateTime             @default(now()) @db.DateTime(0)
+  robot_account           robot_account        @relation(fields: [robot_id], references: [id], onUpdate: Restrict, map: "user_robot_invite_ibfk_1")
+  client_relation_role    client_relation_role @relation(fields: [client_relation_role_id], references: [id], onUpdate: Restrict, map: "user_robot_invite_ibfk_2")
+
+  @@unique([robot_id, email], map: "idx_robot_id_email")
+  @@index([client_relation_role_id], map: "user_robot_invite_client_relation_role_id")
+}
+
+model user_robot_role {
+  id         Int          @id @db.UnsignedTinyInt
+  role       String       @db.VarChar(64)
+  created_at DateTime     @default(now()) @db.DateTime(0)
+  user_robot user_robot[]
+}
+
+enum script_next_multiple_choice_intention_type {
+  command
+  offline
+  other
+}
+
+enum inactive_user_email_sent_event_not_sent_reason {
+  bounced
+}
+
+enum multiple_choice_execution_data_intention_type {
+  command
+  offline
+  other
+}
+
+enum sensara_location_polling_type {
+  LOCATION
+  ACTIVITY
+}
+
+enum revision_robot_account_role {
+  robot
+
+  @@map("_revision_robot_account_role")
+}
+
+enum inactive_robot_email_sent_event_not_sent_reason {
+  bounced
+  unverified
+}
+
+enum robot_account_role {
+  robot
+}
+
+enum robot_delete_request_status {
+  pending
+  success
+  failed
+}
+
+enum script_next_closed_question_answer {
+  yes
+  no
+  other
+  silence
+}
+
+enum revision_playlist__revision_action {
+  INSERT
+  UPDATE
+
+  @@map("_revision_playlist__revision_action")
+}
+
+enum revision_playlist_entry__revision_action {
+  INSERT
+  UPDATE
+
+  @@map("_revision_playlist_entry__revision_action")
+}
+
+enum revision_script_speech_interaction__revision_action {
+  INSERT
+  UPDATE
+  DELETE
+
+  @@map("_revision_script_speech_interaction__revision_action")
+}
+
+enum script_type {
+  script
+  reminder
+  question
+}
+
+enum revision_user_profile__revision_action {
+  INSERT
+  UPDATE
+
+  @@map("_revision_user_profile__revision_action")
+}
+
+enum revision_robot_schema__revision_action {
+  INSERT
+  UPDATE
+
+  @@map("_revision_robot_schema__revision_action")
+}
+
+enum revision_user_account__revision_action {
+  INSERT
+  UPDATE
+
+  @@map("_revision_user_account__revision_action")
+}
+
+enum revision_robot_account__revision_action {
+  INSERT
+  UPDATE
+
+  @@map("_revision_robot_account__revision_action")
+}
+
+enum revision_music_collection__revision_action {
+  INSERT
+  UPDATE
+
+  @@map("_revision_music_collection__revision_action")
+}
+
+enum task_schedule_recurrence_type {
+  CRON
+  MINUTELY
+  HOURLY
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}

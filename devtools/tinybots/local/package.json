@@ -1,0 +1,25 @@
+{
+  "name": "tinybots-db-tools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate:tinybots": "prisma generate --schema prisma/tinybots/schema.prisma",
+    "generate:dashboard": "prisma generate --schema prisma/dashboard/schema.prisma",
+    "generate": "npm run generate:tinybots && npm run generate:dashboard",
+    "db:pull:tinybots": "prisma db pull --schema prisma/tinybots/schema.prisma",
+    "db:pull:dashboard": "prisma db pull --schema prisma/dashboard/schema.prisma",
+    "seed": "tsx src/seed/run.ts",
+    "seed:clean": "tsx src/seed/run.ts --clean"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "prisma": "^5.20.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.20.0",
+    "dotenv": "^16.4.5"
+  }
+}

@@ -1,0 +1,478 @@
+name: tinybots-devtools
+
+services:
+  mysql-typ-e-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_USER: dbadmin
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: ICgVcbpYW731vY3UjexgAnuQ69Wv2DdN
+      MYSQL_DATABASE: tinybots
+    ports:
+      - "1123:3306"
+
+  typ-e:
+    image: 693338167548.dkr.ecr.eu-central-1.amazonaws.com/typ-e:${TYP_E_VERSION:-latest}
+    environment:
+      DB_HOST: mysql-typ-e-db:3306
+      DB_RW_USERNAME: root
+      DB_RW_PASSWORD: ICgVcbpYW731vY3UjexgAnuQ69Wv2DdN
+    volumes:
+      - typ-e-maven-cache:/root/.m2
+      # - /Users/kai/work/tinybots/tinybots/backend/typ-e/src/main/resources/db/migration/V101__grant_micro_manager_event_tables.sql:/usr/src/app/src/main/resources/db/migration/V101__grant_micro_manager_event_tables.sql
+    depends_on:
+      - mysql-typ-e-db
+
+  mysql-wonkers-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_USER: dbadmin
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: ICgVcbpYW731vY3UjexgAnuQ69Wv2DdN
+      MYSQL_DATABASE: dashboard
+    ports:
+      - "1124:3306"
+
+  wonkers-db:
+    image: 693338167548.dkr.ecr.eu-central-1.amazonaws.com/wonkers-db:${WONKERS_DB_VERSION:-latest}
+    environment:
+      DB_HOST: mysql-wonkers-db:3306
+      DB_RW_USERNAME: root
+      DB_RW_PASSWORD: ICgVcbpYW731vY3UjexgAnuQ69Wv2DdN
+    volumes:
+      - wonkers-db-maven-cache:/root/.m2
+    depends_on:
+      - mysql-wonkers-db
+
+  mysql-atlas-intelligence-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_USER: dbadmin
+      MYSQL_PASSWORD: v7tL4VY6PEqnL5WH
+      MYSQL_ROOT_PASSWORD: ICgVcbpYW731vY3UjexgAnuQ69Wv2DdN
+      MYSQL_DATABASE: analytics
+    ports:
+      - "1126:3306"
+
+  intelligence:
+    image: 693338167548.dkr.ecr.eu-central-1.amazonaws.com/intelligence:${INTELLIGENCE_VERSION:-latest}
+    environment:
+      DB_RW_HOST: mysql-atlas-intelligence-db:3306
+      DB_HOST: mysql-atlas-intelligence-db:3306
+      DB_RW_USERNAME: root
+      DB_RW_PASSWORD: ICgVcbpYW731vY3UjexgAnuQ69Wv2DdN
+    volumes:
+      - intelligence-maven-cache:/root/.m2
+    depends_on:
+      - mysql-atlas-intelligence-db
+
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4566-4599"
+    environment:
+      - SERVICES=sqs
+      - DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_REGION=us-east-1
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./localstack:/etc/localstack/init/ready.d"
+
+  checkpoint:
+    image: 693338167548.dkr.ecr.eu-central-1.amazonaws.com/checkpoint:${CHECKPOINT_VERSION:-latest}
+    mem_limit: 512m
+    ports:
+      - 3002:8080
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:- }
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:- }
+      ENVIRONMENT: dev
+      DB_RW_HOST: mysql-typ-e-db
+      DB_RW_PORT: 3306
+      CHECKPOINT_ADDRESS: http://checkpoint:8080
+      KONG_ADMIN_ADDRESS: http://kong-v2:8001
+      KONG_API_ADDRESS: http://kong-v2:8000
+      TOKEN_SERVICE_URL: http://kong-retriever:8080
+      WONKERS_API_ADDRESS: http://localhost:8089
+      PROWL_INTERNAL_ADDRESS: http://prowl:8080
+      MARVIN_INTERNAL_ADDRESS: http://127.0.0.1:8080
+      CHECKPOINT_INTERNAL_ADDRESS: http://127.0.0.1:8080
+      MICRO_MANAGER_INTERNAL_ADDRESS: http://localhost:8089
+      ROBOT_CONFIG_ADDRESS: http://localhost:8089
+      FROM_EMAIL: integration-test@example.com
+      FRONT_END_ADDRESS: https://my.tinybots.academy
+      SMTP_HOST: mailcatcher
+      SMTP_PORT: 1025
+      SMTP_USERNAME: test
+      SMTP_PASSWORD: dummy
+      SMTP_USE_SSL: "false"
+    depends_on:
+      typ-e:
+        condition: service_completed_successfully
+
+  prowl:
+    image: 693338167548.dkr.ecr.eu-central-1.amazonaws.com/prowl:${PROWL_VERSION:-latest}
+    ports:
+      - 3001:8080
+    restart: on-failure:5
+    environment:
+      SERVICE_ADDRESS: http://prowl:8080
+      KONG_ADMIN_ADDRESS: http://kong-v2:8001
+      KONG_API_ADDRESS: http://kong-v2:8000
+      PROWL_INTERNAL_ADDRESS: http://127.0.0.1:8080
+      CHECKPOINT_INTERNAL_ADDRESS: http://checkpoint:8080
+      TOKEN_SERVICE_URL: http://kong-retriever:8080
+      DB_RW_HOST: mysql-typ-e-db:3306
+      FRONT_END_ADDRESS: https://my.tinybots.academy
+      FROM_EMAIL: integration-test@example.com
+      SMTP_HOST: mailcatcher
+      SMTP_PORT: 1025
+      SMTP_USERNAME: test
+      SMTP_PASSWORD: dummy
+      SMTP_USE_SSL: "false"
+      WELCOME_NOTIFICATION_UUID: abcdefg
+      HUE_INTERNAL_ADDRESS: http://hue:8089
+    depends_on:
+      typ-e:
+        condition: service_completed_successfully
+
+  wonkers:
+    image: 693338167548.dkr.ecr.eu-central-1.amazonaws.com/wonkers-api:${WONKERS_API_VERSION:-latest}
+    ports:
+      - 8080
+    environment:
+      DB_RW_HOST: mysql-wonkers-db
+      DB_PORT: 3306
+      SERVICE_ADDRESS: http://wonkers:8080
+      CHECKPOINT_ADDRESS: http://checkpoint:8080
+      TINMAN_ADDRESS: http://tinman:8080
+      KONG_ADMIN_ADDRESS: http://kong:8001
+      KONG_API_ADDRESS: http://kong:8000
+      WONKERS_INTERNAL_ADDRESS: http://wonkers:8080
+      FRONT_END_ADDRESS: https://dashboard.tinybots.academy
+      ADMIN_ADDRESS: https://admin.tinybots.academy
+      TEAMLEADER_ID: test
+      TEAMLEADER_SECRET: test
+      SMTP_HOST: mailcatcher
+      SMTP_PORT: 1025
+      SMTP_USERNAME: test
+      SMTP_PASSWORD: dummy
+      SMTP_USE_SSL: 'false'
+    depends_on:
+      wonkers-db:
+        condition: service_completed_successfully
+
+  wonkers-account:
+    image: 693338167548.dkr.ecr.eu-central-1.amazonaws.com/wonkers-accounts:${WONKERS_ACCOUNT_VERSION:-latest}
+    ports:
+      - 8111:8080
+    environment:
+      DB_RW_HOST: mysql-wonkers-db
+      DB_PORT: 3306
+      SERVICE_ADDRESS: http://wonkers:8080
+      CHECKPOINT_ADDRESS: http://checkpoint:8080
+      TINMAN_ADDRESS: http://tinman:8080
+      KONG_ADMIN_ADDRESS: http://kong:8001
+      KONG_API_ADDRESS: http://kong:8000
+      WONKERS_INTERNAL_ADDRESS: http://wonkers:8080
+      FRONT_END_ADDRESS: https://dashboard.tinybots.academy
+      ADMIN_ADDRESS: https://admin.tinybots.academy
+      TEAMLEADER_ID: test
+      TEAMLEADER_SECRET: test
+      SMTP_HOST: mailcatcher
+      SMTP_PORT: 1025
+      SMTP_USERNAME: test
+      SMTP_PASSWORD: dummy
+      SMTP_USE_SSL: "false"
+    depends_on:
+      wonkers-db:
+        condition: service_completed_successfully
+
+  mailcatcher:
+    image: schickling/mailcatcher:latest
+    ports:
+      - "1080"
+      - "1025"
+  kryten:
+    image: 693338167548.dkr.ecr.eu-central-1.amazonaws.com/kryten:${KRYTEN_API_VERSION:-latest}
+    ports:
+      - 8080
+    environment:
+      KONG_ADMIN_ADDRESS: http://kong-v2:8001
+      KONG_API_ADDRESS: http://kong-v2:8000
+      KRYTEN_USERS_ADDRESS: http://kryten:8080
+      SERVICE_ADDRESS: https://dashboard.tinybots.academy
+      OAUTH_CLIENT_ID: myid
+      OAUTH_CLIENT_SECRET: mysecret
+      DB_RW_HOST: mysql-wonkers-db
+
+# === NodeJS Development Services ===
+  megazord-events:
+    image: node:22-alpine
+    volumes:
+      - /Users/kai/work/tinybots/tinybots/backend/megazord-events:/usr/src/app
+    ports:
+      - 8881:8080
+    labels:
+      - megazord-events
+    environment:
+      DB_RW_HOST: mysql-typ-e-db
+      DB_WONKERS_ACCOUNT_RW_HOST: mysql-wonkers-db
+      DB_PORT: 3306
+      CHECKPOINT_ADDRESS: http://checkpoint:8080
+      PROWL_ADDRESS: http://prowl:8080
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_REGION: us-east-1
+      AWS_ENDPOINT: http://localstack:4566
+      STATUS_QUEUE_ADDRESS: http://localhost:4566/000000000000/status-queue
+      ENVIRONMENT: "academy"
+      WONKERS_INTERNAL_ADDRESS: "http://wonkers:8080"
+      WONKERS_USER_ACCOUNT_ADDRESS: "http://wonkers-account:8080"
+      MEGAZORD_EVENTS_IS_LOCAL: true
+    working_dir: /usr/src/app
+    entrypoint: ["sh", "-c", "yarn test"]
+    depends_on:
+      prowl:
+        condition: service_started
+      typ-e:
+        condition: service_completed_successfully
+      wonkers-db:
+        condition: service_completed_successfully
+
+  wonkers-graphql:
+    image: node:22-alpine
+    ports:
+      - 8882:8080
+    volumes:
+      - /Users/kai/work/aweave/projects/tinybots/backend/wonkers-graphql:/usr/src/app
+    labels:
+      - wonkers-graphql
+    environment:
+      NODE_ENV: test
+      TINYBOTS_DB_HOST: mysql-typ-e-db
+      DASHBOARD_DB_HOST: mysql-wonkers-db
+      WONKERS_INTERNAL_ADDRESS: http://wonkers:8080
+      WONKERS_ACCOUNTS_INTERNAL_ADDRESS: http://test.test
+      WONKERS_USER_ACCOUNT_ADDRESS: http://wonkers-account:8080
+      TAAS_ORDERS_SERVICE_INTERNAL_ADDRESS: http://test.test
+      WONKERS_ROBOTS_INTERNAL_ADDRESS: http://test.test
+      WONKERS_ROBOTACCOUNT_INTERNAL_ADDRESS: http://test.test
+      WONKERS_ROBOTONLINESTATUS_INTERNAL_ADDRESS: http://test.test
+      SCHEDULING_SERVICE_ADDRESS: http://test.test
+      WONKERS_TAAS_INTERNAL_ADDRESS: http://test.test
+      SCRIPTS_INTERNAL_ADDRESS: http://test.test
+      SENSARA_API_ADDRESS: http://test.test
+      SUPER_USERS: admin@admin.com
+      JIRA_EMAIL: email@email.com
+      JIRA_TOKEN: email@email.com
+      JIRA_BASE_URL: email.com
+    working_dir: /usr/src/app
+    entrypoint: ["sh", "-c", "yarn test:only"]
+    depends_on:
+      typ-e:
+        condition: service_completed_successfully
+      wonkers-db:
+        condition: service_completed_successfully
+
+  azi-3-status-check-jobs:
+    image: node:22-alpine
+    ports:
+      - 8883:8080
+      - 9229:9229
+    volumes:
+      - /Users/kai/work/tinybots/tinybots/backend/azi-3-status-check-jobs:/usr/src/app
+    labels:
+      - azi-3-status-check-jobs
+    environment:
+      STATUS_QUEUE_ADDRESS: http://localstack:4566/000000000000/status-queue
+      MEGAZORD_EVENTS_ADDRESS: http://megazord-events:8080
+      #MONITORING_CONFIG: "{\"robots\":[{\"robotId\":1,\"timezone\":\"Europe/Amsterdam\",\"enabled\":true,\"monitoringRules\":[{\"ruleId\":\"toilet-activity-2hr\",\"eventName\":\"TOILET_ACTIVITY\",\"windowDurationMinutes\":1,\"dailyWindow\":{\"startTime\":\"00:01\",\"endTime\":\"23:59\"},\"actions\":[{\"type\":\"ALARM\",\"config\":{\"eventName\":\"NO_TOILET_ACTIVITY_ALARM\"}}]}]}]}"
+    working_dir: /usr/src/app
+    entrypoint: [ "sh", "-c", "yarn test:only" ]
+    depends_on:
+      typ-e:
+        condition: service_completed_successfully
+      wonkers-db:
+        condition: service_completed_successfully
+
+  m-o-triggers:
+    image: node:22-alpine
+    volumes:
+      - /Users/kai/work/tinybots/tinybots/backend/m-o-triggers:/usr/src/app
+    labels:
+      - m-o-triggers
+    environment:
+      DB_RW_HOST: mysql-typ-e-db
+      DB_PORT: 3306
+      CHECKPOINT_ADDRESS: http://checkpoint:8080
+      PROWL_ADDRESS: http://prowl:8080
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_REGION: us-east-1
+      AWS_ENDPOINT: http://localstack:4566
+      BASE_ROBOT_QUEUE_ADDRESS: http://localhost:4566/000000000000/status-queue
+    working_dir: /usr/src/app
+    entrypoint: ["sh", "-c", "yarn test"]
+    depends_on:
+      typ-e:
+        condition: service_completed_successfully
+
+  wonkers-ecd:
+    image: node:22-alpine
+    volumes:
+      - /Users/kai/work/tinybots/tinybots/backend/wonkers-ecd:/usr/src/app
+    labels:
+      - "wonkers-ecd"
+    environment:
+      DB_RW_HOST: mysql-wonkers-db
+      KRYTEN_USERS_ADDRESS: http://kryten:8080
+      WONKERS_TAAS_ORDERS_SERVICE_ADDRESS: http://wonkers-taas:8080
+      ECARE_PUUR_API_ADDRESS: https://puur_api
+      ECARE_PUUR_TOKEN_ADDRESS: https://ecare_puur_token_address
+      ECARE_PUUR_EMPLOYEE_API_ADDRESS: https://puur_api_employee
+      ENVIRONMENT: dev
+      SMTP_HOST: mailcatcher
+      SMTP_PORT: 1025
+      SMTP_USE_SSL: "false"
+      SMTP_USERNAME: "test"
+      SMTP_PASSWORD: "dummy"
+      SOCKET_TIMEOUT: 5000
+      SLACK_HOOK: https://test-slack.tinybots.nl/test
+      SLACK_CONCEPT_HOOK: https://test-slack.tinybots.nl/test
+      CONCEPT_SLACK_HOOK: https://test-slack.tinybots.nl/test
+    working_dir: /usr/src/app
+    entrypoint: ["sh", "-c", "yarn test:only"]
+    depends_on:
+      wonkers-db:
+        condition: service_completed_successfully
+    
+  eve:
+    image: maven:3-jdk-12
+    platform: linux/amd64
+    volumes:
+      - ../../../projects/tinybots/backend/eve:/usr/src/app
+      - eve-maven-cache:/root/.m2
+      - ${HOME}/.aws:/root/.aws:ro
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:- }
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:- }
+      AWS_PROFILE: ${AWS_PROFILE:-default}
+      AWS_REGION: ${AWS_REGION:-eu-central-1}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-eu-central-1}
+      DB_RW_HOST: mysql-typ-e-db:3306
+      ENVIRONMENT: dev
+      CHECKPOINT_INTERNAL_ADDRESS: http://checkpoint:8080
+      PROWL_INTERNAL_ADDRESS: http://prowl:8080
+      COMMANDER_DATA_ADDRESS: http://localhost:8089
+      ROBOCOP_INTERNAL_ADDRESS: http://localhost:8089
+    working_dir: /usr/src/app
+    entrypoint: ["sh", "-c", "ci/mvn-verify.sh"]
+    depends_on:
+      typ-e:
+        condition: service_completed_successfully
+      checkpoint:
+        condition: service_started
+      prowl:
+        condition: service_started
+
+  micro-manager:
+    image: node:22-alpine
+    volumes:
+      - ../../../projects/tinybots/backend/micro-manager:/usr/src/app
+    ports:
+      - "18080:8080"
+    labels:
+      - micro-manager
+    environment:
+      DB_RW_HOST: mysql-typ-e-db
+      DB_PORT: 3306
+      CHECKPOINT_ADDRESS: http://checkpoint:8080
+      PROWL_ADDRESS: http://prowl:8080
+      EVE_ADDRESS: http://eve:8080
+      WADSWORTH_ADDRESS: http://wadsworth:8080
+      COMMANDER_DATA_ADDRESS: http://commander-data:8080
+      REPORTING_ADDRESS: http://reporting:8080
+      SIGMUND_ADDRESS: http://sigmund:8080
+      WONKERS_ROBOTS_ADDRESS: http://wonkers-robots:8080
+      ROBOCOP_ADDRESS: http://robocop:8080
+      PUBLIC_BOT_ID: 999999
+    working_dir: /usr/src/app
+    entrypoint: ["sh", "-c", "export COREPACK_ENABLE_DOWNLOAD_PROMPT=0 && corepack enable && corepack prepare yarn@4.12.0 --activate && yarn install --silent && yarn test:only"]
+    depends_on:
+      typ-e:
+        condition: service_completed_successfully
+
+  atlas:
+    image: node:22-alpine
+    volumes:
+      - /Users/kai/work/tinybots/tinybots/backend/atlas:/usr/src/app
+    labels:
+      - atlas-service
+    environment:
+      TYP_DB_RW_HOST: mysql-typ-e-db
+      TYP_DB_PORT: 3306
+      INT_DB_RW_HOST: mysql-atlas-intelligence-db
+      INT_DB_PORT: 3306
+    working_dir: /usr/src/app
+    entrypoint: ["sh", "-c", "yarn run test:only"]
+    depends_on:
+      typ-e:
+        condition: service_completed_successfully
+      intelligence:
+        condition: service_completed_successfully
+
+  sensara-adaptor:
+    image: node:22-alpine
+    volumes:
+      - /Users/kai/work/tinybots/tinybots/backend/sensara-adaptor:/usr/src/app
+    labels:
+      - sensara-adaptor
+    environment:
+      DB_RW_HOST: mysql-typ-e-db
+      DB_PORT: 3306
+      DB_RW_HOST_INTELLIGENCE: mysql-atlas-intelligence-db
+      DASHBOARD_DB_RW_HOST: mysql-wonkers-db
+      WONKERS_INTERNAL_ADDRESS: http://wonkers:8080
+      WONKERS_USER_ACCOUNT_ADDRESS: http://wonkers-account:8080
+      SENSARA_HOST: https://sensara-test
+      AUTH_SENSARA_HOST: https://sensara-auth-test
+      SENSARA_CLIENTID: test
+      SENSARA_CLIENTSECRET: test
+      SENSARA_USERNAME: test
+      SENSARA_PASSWORD: test
+      TEST_SENSARA_HOST: https://sensara-test
+      TEST_AUTH_SENSARA_HOST: https://sensara-auth-test
+      TEST_SENSARA_CLIENTID: test
+      TEST_SENSARA_CLIENTSECRET: test
+      TEST_SENSARA_USERNAME: test
+      TEST_SENSARA_PASSWORD: test
+      ENVIRONMENT: academy
+      SLACK_HOOK: https://test-slack
+      EVENT_SERVICE_ADDRESS: http://megazord:8080
+      ROBOT_ACCOUNT_SERVICE_ADDRESS: http://checkpoint:8080
+      DASHBOARD_ROBOT_SERVICE_ADDRESS: http://wonkers-robots:8080
+    working_dir: /usr/src/app
+    entrypoint: ["sh", "-c", "yarn test:only"]
+    depends_on:
+      typ-e:
+        condition: service_completed_successfully
+      wonkers-db:
+        condition: service_completed_successfully
+      intelligence:
+        condition: service_completed_successfully
+
+volumes:
+  typ-e-maven-cache:
+  wonkers-db-maven-cache:
+  intelligence-maven-cache:
+  eve-maven-cache:
+
+networks:
+  default:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.0.0/24

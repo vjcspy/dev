@@ -53,3 +53,14 @@ devdocs/misc/devtools/*/
 devtools/*/
 !devtools/common/
 !devtools/scripts/
+
+# ========================================
+# Branch: projects/tinybots
+# ========================================
+!devdocs/agent/commands/tinybots/
+!devdocs/agent/rules/tinybots/
+!devdocs/agent/skills/tinybots/
+!devdocs/agent/templates/tinybots/
+!devdocs/misc/devtools/tinybots/
+!devdocs/projects/tinybots/
+!devtools/tinybots/
