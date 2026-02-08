@@ -24,13 +24,11 @@
     "plugins": [
       "@aweave/cli-plugin-debate",
       "@aweave/cli-plugin-docs",
-      "@aweave/cli-plugin-tinybots-bitbucket",
       "@aweave/cli-plugin-dashboard"
     ]
   },
   "dependencies": {
     "@aweave/cli-plugin-dashboard": "workspace:*",
-    "@aweave/cli-plugin-tinybots-bitbucket": "workspace:*",
     "@aweave/cli-plugin-debate": "workspace:*",
     "@aweave/cli-plugin-docs": "workspace:*",
     "@aweave/cli-shared": "workspace:*",
