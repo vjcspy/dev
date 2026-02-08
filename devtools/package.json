@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Unified development tools monorepo",
-  "packageManager": "pnpm@10.28.2",
+  "packageManager": "pnpm@10.29.1",
   "scripts": {
     "build": "turbo build",
     "lint": "eslint .",

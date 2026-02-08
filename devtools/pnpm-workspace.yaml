@@ -15,4 +15,3 @@ onlyBuiltDependencies:
   - "@prisma/client"
   - "@prisma/engines"
   - "better-sqlite3"
-  - "prisma"

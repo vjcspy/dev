@@ -4,7 +4,7 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
-import Database from 'better-sqlite3';
+import Database = require('better-sqlite3');
 import { mkdirSync } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';
