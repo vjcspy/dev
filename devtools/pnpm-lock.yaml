@@ -50,6 +50,9 @@ importers:
       '@aweave/cli-plugin-docs':
         specifier: workspace:*
         version: link:../cli-plugin-docs
+      '@aweave/cli-plugin-tinybots-bitbucket':
+        specifier: workspace:*
+        version: link:../../tinybots/cli-plugin-bitbucket
       '@aweave/cli-shared':
         specifier: workspace:*
         version: link:../cli-shared
@@ -385,6 +388,22 @@ importers:
       typescript-eslint:
         specifier: ^8.20.0
         version: 8.54.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+
+  tinybots/cli-plugin-bitbucket:
+    dependencies:
+      '@aweave/cli-shared':
+        specifier: workspace:*
+        version: link:../../common/cli-shared
+      '@oclif/core':
+        specifier: ^4.2.8
+        version: 4.8.0
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.7
+        version: 22.19.9
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
 
 packages:
 

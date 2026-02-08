@@ -9,3 +9,4 @@ packages:
   - common/cli-plugin-debate
   - common/cli-plugin-docs
   - common/cli-plugin-dashboard
+  - tinybots/cli-plugin-bitbucket
